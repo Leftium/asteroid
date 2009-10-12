@@ -61,8 +61,8 @@ public:
 };
 
 CObject::CObject(double dInitX, double dInitY, double dInitVelocity,
-				 int nInitRadius, int nInitHealth, int nInitData = 0,
-				 int nInitHeading = 0, int nInitBearing = 0)
+				 int nInitRadius, int nInitHealth, int nInitData,
+				 int nInitHeading, int nInitBearing)
 {
 	dX = dInitX;
 	dY = dInitY;
@@ -77,7 +77,7 @@ CObject::CObject(double dInitX, double dInitY, double dInitVelocity,
 	dOldY = dY;
 }
 
-inline void CObject::Move(double dPower = 0, int nAngle = 0)
+inline void CObject::Move(double dPower, int nAngle)
 {
 	if (dPower != 0)	// moved by outside force (thrusters or collision)
 	{

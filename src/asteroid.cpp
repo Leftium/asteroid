@@ -5,13 +5,14 @@
 
 // #INCLUDES ////////////////////////////////////////////////////////////////
 #include <allegro.h>
-#include <random.h>
+// #include <random.h> // not available in MSVC
+#include <stdlib.h>    // for rand()
 #include "asteroid.h"
 #include "object.h"
 #include "bearing.h"
 
 // #DEFINES /////////////////////////////////////////////////////////////////
-#define Rnd(x)		((random() % (x)))
+#define Rnd(x)		((rand() % (x)))
 #define PAN(x)      (int((x) * 256) / SCREEN_W)
 #define NUM_ROCKS	7
 #define MAX_SHOTS	10
@@ -580,11 +581,11 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
      /* animate the starfield */
       for (int c=0; c<MAX_STARS; c++) {
 	 if (star[c].z <= itofix(1)) {
-	    x = itofix(random()&0xff);
-	    y = itofix(((random()&3)+1)*SCREEN_W);
+	    x = itofix(rand()&0xff);
+	    y = itofix(((rand()&3)+1)*buf->w);
 	    star[c].x = fmul(fcos(x), y);
 	    star[c].y = fmul(fsin(x), y);
-	    star[c].z = itofix((random() & 0x1f) + 0x20);
+	    star[c].z = itofix((rand() & 0x1f) + 0x20);
 	 }
 
 	 x = fdiv(star[c].x, star[c].z);
@@ -699,3 +700,4 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
 	return 0;
 }
+END_OF_MAIN()
