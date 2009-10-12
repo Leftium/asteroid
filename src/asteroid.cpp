@@ -27,6 +27,11 @@ int Collide(CObject *p1, CObject *p2)
 
 	return 0;
 }
+
+int gfx_card = GFX_AUTODETECT_WINDOWED;
+int gfx_w = 640;
+int gfx_h = 400;
+int gfx_bpp = 8;
 	
 
 // MAIN /////////////////////////////////////////////////////////////////////
@@ -35,9 +40,37 @@ int main()
   // init stuff ///////////////////////////////////////////////////////////
 	allegro_init();
 	install_timer();
+	install_mouse();	// added for screen resolution selection dialog
 	install_keyboard();
 	install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, "SOUND.CFG");
-	set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0);
+
+	// START NEW GFX MODE
+    /* set a graphics mode sized 320x200 */
+    if (set_gfx_mode(GFX_SAFE, 320, 200, 0, 0)!=0) {
+        set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+        allegro_message("Unable to set any graphic mode\n%s\n", allegro_error);
+        return 1;
+    }
+
+    RGB grey = { 52, 51, 49 };
+
+    vsync();
+    set_color(0, &grey);
+    set_color(1, &black_palette[0]);
+
+    gui_fg_color = 1;
+    gui_bg_color = 0;
+
+    // gfx_bpp = desktop_color_depth(); // crawls when not 8-bit... default to 8-bit
+    if (!gfx_mode_select_ex(&gfx_card, &gfx_w, &gfx_h, &gfx_bpp)) {
+        return -1;
+    }
+
+    if (gfx_bpp != 0) {
+        set_color_depth(gfx_bpp);
+    }
+	if (set_gfx_mode(gfx_card, gfx_w, gfx_h, 0, 0) != 0) return 1;
+    // END NEW GFX MODE
 
 	set_volume(255,255);
 
@@ -45,6 +78,14 @@ int main()
 	DATAFILE *data;
 	// data = load_datafile("#");
 	data = load_datafile("asteroid.dat");
+
+	if (!data)
+	{
+		allegro_message("Error loading game data!\n");
+		exit(2);
+	}
+
+	
 
 	// load MIDI ////////////////////////////////////////////////////////////
 	MIDI *midi;	
@@ -590,10 +631,10 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
 	 x = fdiv(star[c].x, star[c].z);
 	 y = fdiv(star[c].y, star[c].z);
-	 ix = (int)(x>>16) + SCREEN_W/2;
-	 iy = (int)(y>>16) + SCREEN_H/2;
+	 ix = (int)(x>>16) + buf->w/2;
+	 iy = (int)(y>>16) + buf->h/2;
 	 // putpixel(screen, star[c].ox, star[c].oy, 0);
-	 if ((ix >= 0) && (ix < SCREEN_W) && (iy >= 0) && (iy <= SCREEN_H)) {
+	 if ((ix >= 0) && (ix < buf->w) && (iy >= 0) && (iy <= buf->h)) {
 	    // if (getpixel(screen, ix, iy) == 0) {
 	       if (c < star_count) {
 		  c2 = 7-(int)(star[c].z>>18);
@@ -691,7 +732,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 		}
 
 		vsync();
-		blit(buf, screen, 0, 0, 0, 0, 320, 200);
+		stretch_blit(buf, screen, 0, 0, 320, 200, 0, 0, SCREEN_W, SCREEN_H);
      
 	}	
 
