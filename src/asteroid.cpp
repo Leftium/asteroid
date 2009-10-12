@@ -56,16 +56,19 @@ int main()
     gui_fg_color = 1;
     gui_bg_color = 0;
 
-    // gfx_bpp = desktop_color_depth(); // crawls when not 8-bit... default to 8-bit
+    gfx_bpp = desktop_color_depth();
     if (!gfx_mode_select_ex(&gfx_card, &gfx_w, &gfx_h, &gfx_bpp)) {
         return -1;
     }
-
     if (gfx_bpp != 0) {
         set_color_depth(gfx_bpp);
     }
+
     if (set_gfx_mode(gfx_card, gfx_w, gfx_h, 0, 0) != 0) return 1;
     // END NEW GFX MODE
+
+    show_mouse(screen);
+    position_mouse(SCREEN_W+10, SCREEN_H+10);
 
     set_volume(255,255);
 
