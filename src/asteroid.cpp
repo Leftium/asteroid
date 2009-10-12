@@ -70,8 +70,23 @@ int main()
     set_volume(255,255);
 
     // Load data ////////////////////////////////////////////////////////////
-    DATAFILE *data;
-    // data = load_datafile("#");
+    DATAFILE *data, *palette_object;
+
+    // Set palette before loading data file so color conversion correct
+    palette_object = load_datafile_object("asteroid.dat", "Game_palette");
+
+    if (!palette_object)
+    {
+        allegro_message("Error loading PAL data!\n");
+        exit(2);
+    }
+
+    set_palette((RGB *) palette_object->dat);
+
+    // Destroy unneeded palette
+    unload_datafile_object(palette_object);
+
+    set_color_conversion(COLORCONV_KEEP_TRANS | COLORCONV_TOTAL);
     data = load_datafile("asteroid.dat");
 
     if (!data)
@@ -103,7 +118,7 @@ int main()
     bar2 = (BITMAP *)data[__Bar2].dat;
 
     buf = create_bitmap(320, 200);
-    set_palette((RGB *) data[__Game_palette].dat);
+    
 
     // create objects ///////////////////////////////////////////////////////
     CObject *Ship1;
@@ -625,7 +640,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         // if (getpixel(screen, ix, iy) == 0) {
            if (c < star_count) {
           c2 = 7-(int)(star[c].z>>18);
-          putpixel(buf, ix, iy, 255-MID(0, c2, 7));
+          putpixel(buf, ix, iy, 255-MID(0, c2, 7)); // TODO: make colors work in truecolor
            }
            star[c].ox = ix;
            star[c].oy = iy;
@@ -643,7 +658,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
      }
       }
 
-        // life bars //
+        // life bars
         if (Ship1 != NULL)
         {
             for (int i=Ship1->GetHealth(); i>0; i--)
@@ -653,6 +668,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
             if (Energy1 > 0)
             {
+                // TODO: Color correctly in truecolor
                 rectfill(buf, 25, 198, 30 , int(198 - (double(Energy1)/1000.0) * 50.0), 62);
             }
 
@@ -669,6 +685,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
             if (Energy2 > 0)
             {
+                // TODO: Color correctly in truecolor
                 rectfill(buf, 293, 198, 298 , int(198 - (double(Energy2)/1000.0) * 50.0), 63);
             }
 
