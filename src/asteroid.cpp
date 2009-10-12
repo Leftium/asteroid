@@ -122,13 +122,13 @@ int main()
 
     buf = create_bitmap(320, 200);
 
-	int Ship1Color = makecol(97, 207, 207);
-	int Ship2Color = makecol(97, 255, 190);
-	int StarColor[8];
-	for (int i=0; i<8; i++)
-	{
-		StarColor[i] = makecol(255*i/7, 255*i/7, 255*i/7);
-	}
+    int Ship1Color = makecol(97, 207, 207);
+    int Ship2Color = makecol(97, 255, 190);
+    int StarColor[8];
+    for (int i=0; i<8; i++)
+    {
+        StarColor[i] = makecol(255*i/7, 255*i/7, 255*i/7);
+    }
     
 
     // create objects ///////////////////////////////////////////////////////
@@ -142,6 +142,7 @@ int main()
 
     int ShotDelay1 = 0;
     int Energy1 = 1000;
+    bool fPlayEngine1 = FALSE;
 
     CObject *Ship2;
     CObject *Shot2[MAX_SHOTS];
@@ -152,6 +153,7 @@ int main()
     }
     int ShotDelay2 = 0;
     int Energy2 = 1000;
+    bool fPlayEngine2 = FALSE;
 
     CObject *Rocks[NUM_ROCKS];
     for (int i = 0; i<NUM_ROCKS; i++)
@@ -187,19 +189,21 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         // player 1 //
         if (Ship1 != NULL)
         {
-            if(key[KEY_T])
+            if(key[KEY_W])
             {
                 Ship1->Move( .07, Ship1->GetBearing());
+                fPlayEngine1 = TRUE;
             }
-            if(key[KEY_G])
+            if(key[KEY_S])
             {
                 Ship1->Move(-.07, Ship1->GetBearing());
+                fPlayEngine1 = TRUE;
             }
 
-            if(key[KEY_F])    Ship1->Rotate(-3);
-            if(key[KEY_H])    Ship1->Rotate(3);
+            if(key[KEY_A])    Ship1->Rotate(-3);
+            if(key[KEY_D])    Ship1->Rotate(3);
 
-            if((key[KEY_A]))
+            if((key[KEY_R]))
             {
                 if (Energy1 > -10)
                 {
@@ -236,17 +240,19 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             if(key[KEY_UP])
             {
                 Ship2->Move( .07, Ship2->GetBearing());
+                fPlayEngine2 = TRUE;
             }
 
             if(key[KEY_DOWN])
             {
                 Ship2->Move(-.07, Ship2->GetBearing());
+                fPlayEngine2 = TRUE;
             }
 
             if(key[KEY_LEFT])    Ship2->Rotate(-3);
             if(key[KEY_RIGHT])    Ship2->Rotate( 3);
 
-            if(key[KEY_ALTGR])
+            if(key[KEY_KANJI] || key[KEY_ALTGR])
             {
 
                 if (Energy2 > -10)
@@ -278,14 +284,22 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
         }
 
-        if(key[KEY_T] || key[KEY_G])
+        if(fPlayEngine1)
         {
-            play_sample(engine, 64, PAN(Ship1->GetX()), 1000, 0);
+            if (Ship1 != NULL)
+            {
+                play_sample(engine, 64, PAN(Ship1->GetX()), 1000, 0);
+            }
+            fPlayEngine1 = FALSE;
         }
 
-        else if(key[KEY_UP] || key[KEY_DOWN])
+        else if(fPlayEngine2)
         {
-            play_sample(engine, 64, PAN(Ship2->GetX()), 1000, 0);
+            if (Ship2 != NULL)
+            {
+                play_sample(engine, 64, PAN(Ship2->GetX()), 1000, 0);
+            }
+            fPlayEngine2 = FALSE;
         }
         else
         {
