@@ -1,0 +1,14 @@
+*.log
+
+# Visual Studio files
+*/obj/*
+*/bin/*
+*.ncb
+*.suo
+*.user
+*/Debug/*
+*/Release/*
+*/Profile/*
+Debug/*
+Release/*
+Profile/*

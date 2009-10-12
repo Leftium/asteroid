@@ -1,0 +1,701 @@
+// asteroid.cpp /////////////////////////////////////////////////////////////
+
+
+
+
+// #INCLUDES ////////////////////////////////////////////////////////////////
+#include <allegro.h>
+#include <random.h>
+#include "asteroid.h"
+#include "object.h"
+#include "bearing.h"
+
+// #DEFINES /////////////////////////////////////////////////////////////////
+#define Rnd(x)		((random() % (x)))
+#define PAN(x)      (int((x) * 256) / SCREEN_W)
+#define NUM_ROCKS	7
+#define MAX_SHOTS	10
+#define MAX_EXPLODE 10
+
+
+// COLLIDE //////////////////////////////////////////////////////////////////
+int Collide(CObject *p1, CObject *p2)
+{
+	if (Distance(p1->GetX(), p1->GetY(), p2->GetX(), p2->GetY()) <
+		(p1->GetRadius() + p2->GetRadius())) return 1;
+
+	return 0;
+}
+	
+
+// MAIN /////////////////////////////////////////////////////////////////////
+int main()
+{
+  // init stuff ///////////////////////////////////////////////////////////
+	allegro_init();
+	install_timer();
+	install_keyboard();
+	install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, "SOUND.CFG");
+	set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0);
+
+	set_volume(255,255);
+
+	// Load data ////////////////////////////////////////////////////////////
+	DATAFILE *data;
+	// data = load_datafile("#");
+	data = load_datafile("asteroid.dat");
+
+	// load MIDI ////////////////////////////////////////////////////////////
+	MIDI *midi;	
+	midi = (MIDI *)data[__music].dat;
+	play_midi(midi, 1);
+	
+	// load SFX /////////////////////////////////////////////////////////////
+	SAMPLE *boom, *engine, *shoot;
+	boom = (SAMPLE *)data[__Boom].dat;
+	engine = (SAMPLE *)data[__Engine].dat;
+	shoot = (SAMPLE *)data[__Shoot].dat;
+	
+	// load bitmaps /////////////////////////////////////////////////////////
+	BITMAP *ship1, *ship2, *rock, *ammo1, *ammo2, *buf, *explode, *bar1, *bar2;
+	explode = (BITMAP *)data[__Explode].dat;
+	rock = (BITMAP *)data[__Rock].dat;
+	ammo1 = (BITMAP *)data[__Ammo1].dat;
+	ship1 = (BITMAP *)data[__Ship1].dat;
+	ammo2 = (BITMAP *)data[__Ammo2].dat;
+	ship2 = (BITMAP *)data[__Ship2].dat;
+	bar1 = (BITMAP *)data[__Bar1].dat;
+	bar2 = (BITMAP *)data[__Bar2].dat;
+	
+	buf = create_bitmap(320, 200);
+	set_palette((RGB *) data[__Game_palette].dat);
+
+	// create objects ///////////////////////////////////////////////////////
+	CObject *Ship1;
+	CObject *Shot1[MAX_SHOTS]; 
+	Ship1 = new CObject(80, 100, 0, 10, 100, 1, 0, 0);
+	for (int i=0; i<MAX_SHOTS;i++)
+	{
+		Shot1[i] = NULL;
+	}
+	
+	int ShotDelay1 = 0;
+	int Energy1 = 1000;
+		
+	CObject *Ship2;
+	CObject *Shot2[MAX_SHOTS];
+	Ship2 = new CObject(240, 100, 0, 10, 100, 1, 0, 0);
+	for (int i=0; i<MAX_SHOTS;i++)
+	{
+		Shot2[i] = NULL;
+	}
+	int ShotDelay2 = 0;
+	int Energy2 = 1000;
+	
+	
+	CObject *Rocks[NUM_ROCKS];
+	for (int i = 0; i<NUM_ROCKS; i++)
+	{
+		Rocks[i] = new CObject (Rnd(320), Rnd(200), .1,
+								5, 100, 1, Rnd(256), Rnd(256));
+	}
+
+	CObject *Explode[MAX_EXPLODE];
+	for (int i =0; i< MAX_EXPLODE; i++)
+	{
+		Explode[i] = NULL;
+	}
+
+
+// STAR FIELD STUFF BY SHAWN HARGRAEVES //////////////////////////////////////
+int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
+#define MAX_STARS       128
+
+	volatile struct {
+   	fixed x, y, z;
+   	int ox, oy;
+	} star[MAX_STARS];
+			
+
+	// main loop ////////////////////////////////////////////////////////////
+	while(!key[KEY_ESC])
+	{
+		// erase buf //
+		clear(buf);
+		
+		// HANDLE KEYPRESSES ////////////////////////////////////////////////
+
+		// player 1 //
+		if (Ship1 != NULL)
+		{
+			if(key[KEY_T])
+			{
+				Ship1->Move( .07, Ship1->GetBearing());
+			}
+			if(key[KEY_G])
+			{
+				Ship1->Move(-.07, Ship1->GetBearing());
+			}
+
+			if(key[KEY_F])	Ship1->Rotate(-3);
+			if(key[KEY_H])	Ship1->Rotate(3);
+
+			if((key[KEY_A]))
+			{
+				if (Energy1 > -10)
+				{
+					Energy1 -= 30;
+				}
+				
+				if (ShotDelay1 == 0 && Energy1 > 100)
+				{
+					
+					for(int i = 0; i<MAX_SHOTS; i++)
+					{
+						if (Shot1[i] == NULL)
+						{
+							Shot1[i] = new CObject(Ship1->GetX(), Ship1->GetY(),
+										   3, 4, 0, 25,
+										   Ship1->GetBearing(), Ship1->GetBearing());
+										   
+							Shot1[i]->Move();
+							Shot1[i]->Move(Ship1->GetVelocity(), Ship1->GetHeading());
+							ShotDelay1 = 4;
+						    play_sample(shoot, 64, PAN(Ship1->GetX()), 1000, 0);
+							break;
+						}
+					}		
+				}
+			}
+			if (ShotDelay1 > 0) ShotDelay1--;
+			if (Energy1 < 1000) Energy1 += abs(Energy1/100)+2;
+		}
+
+		if (Ship2 != NULL)
+		{
+			// player 2 //
+			if(key[KEY_UP])
+			{
+				Ship2->Move( .07, Ship2->GetBearing());
+			}
+			
+			if(key[KEY_DOWN])
+			{
+				Ship2->Move(-.07, Ship2->GetBearing());
+			}
+			
+			if(key[KEY_LEFT])	Ship2->Rotate(-3);
+			if(key[KEY_RIGHT])	Ship2->Rotate( 3);
+	
+			if(key[KEY_ALTGR])
+			{
+				
+				if (Energy2 > -10)
+				{
+					Energy2 -= 30;
+				}
+
+				if (ShotDelay2 == 0 && Energy2 > 10)
+				{	
+					for(int i = 0; i<MAX_SHOTS; i++)
+					{
+						if (Shot2[i] == NULL)
+						{
+							Shot2[i] = new CObject(Ship2->GetX(), Ship2->GetY(),
+										   3, 4, 0, 25,
+						    		       Ship2->GetBearing(), Ship2->GetBearing());
+						    Shot2[i]->Move();
+						    Shot2[i]->Move(Ship2->GetVelocity(), Ship2->GetHeading());
+						    
+						    ShotDelay2 = 4;
+						    play_sample(shoot, 64, PAN(Ship2->GetX()), 1000, 0);
+							break;
+						}
+					}
+				}
+			}
+			if (ShotDelay2 > 0) ShotDelay2--;
+			if (Energy2 < 1000) Energy2 += abs(Energy2/100)+2;
+
+		}
+
+		if(key[KEY_T] || key[KEY_G])
+		{
+			play_sample(engine, 64, PAN(Ship1->GetX()), 1000, 0);
+		}
+
+		else if(key[KEY_UP] || key[KEY_DOWN])
+		{
+			play_sample(engine, 64, PAN(Ship2->GetX()), 1000, 0);
+		}
+		else
+		{
+			stop_sample(engine);
+		}
+
+		
+		// HANDLE MOVEMENT //////////////////////////////////////////////////
+
+		// player 1 //
+		if (Ship1 != NULL)
+		{
+			if (Ship1->GetHealth() < 0)
+			{
+				for(int i = 0; i<MAX_EXPLODE; i++)
+				{
+					if (Explode[i] == NULL)
+					{
+						Explode[i] = new CObject(Ship1->GetX(), Ship1->GetY(),
+									   Ship1->GetVelocity(), 0, 0, 30,
+					    		       Ship1->GetBearing(), Ship1->GetBearing());
+					    break;
+					}
+				}
+				delete Ship1;
+				Ship1 = NULL;
+			}
+			else
+			{
+				if (Ship1->GetVelocity() >  2) Ship1->SetVelocity( 2);
+				if (Ship1->GetVelocity() < -2) Ship1->SetVelocity(-2);
+				Ship1->Move();
+				Ship1->SetVelocity(Ship1->GetVelocity() * .99);
+			}
+		}
+		
+		// player 2 //
+		if (Ship2 != NULL)
+		{
+			if (Ship2->GetHealth() < 0)
+			{
+				for(int i = 0; i<MAX_EXPLODE; i++)
+				{
+					if (Explode[i] == NULL)
+					{
+						Explode[i] = new CObject(Ship2->GetX(), Ship2->GetY(),
+									   Ship2->GetVelocity(), 0, 0, 30,
+					    		       Ship2->GetBearing(), Ship2->GetBearing());
+					    break;
+					}
+				}
+				delete Ship2;
+				Ship2 = NULL;
+			}
+			else
+			{
+				if (Ship2->GetVelocity() >  2) Ship2->SetVelocity( 2);
+				if (Ship2->GetVelocity() < -2) Ship2->SetVelocity(-2);
+				Ship2->Move();
+				Ship2->SetVelocity(Ship2->GetVelocity() * .99);
+			}
+		}
+
+
+		// missiles //
+		for (int i = 0; i<MAX_SHOTS; i++)
+		{
+			// player 1 //
+			if (Shot1[i] != NULL)
+			{
+				Shot1[i]->SetData(Shot1[i]->GetData()-1);
+				if (Shot1[i]->GetData() < 0)
+				{
+					delete Shot1[i];
+					Shot1[i] = NULL;
+				}
+				else
+				{
+					Shot1[i]->Move();
+					Shot1[i]->Rotate(6);
+				}
+			}
+
+			// player 2 //
+			if (Shot2[i] != NULL)
+			{
+				Shot2[i]->SetData(Shot2[i]->GetData()-1);
+				if (Shot2[i]->GetData() < 0)
+				{
+					delete Shot2[i];
+					Shot2[i] = NULL;
+				}
+				else
+				{
+					Shot2[i]->Move();
+					Shot2[i]->Rotate(6);
+				}
+			}
+		}
+
+		// asteroids //
+		for (int i = 0; i<NUM_ROCKS; i++)
+		{
+			if (Rocks[i] != NULL)
+			{
+				if (Rocks[i]->GetHealth() < 0)
+				{
+					for(int c = 0; c<MAX_EXPLODE; c++)
+					{
+						if (Explode[c] == NULL)
+						{
+							Explode[c] = new CObject(Rocks[i]->GetX(), Rocks[i]->GetY(),
+										   Rocks[i]->GetVelocity(), 0, 0, 30,
+					    			       Rocks[i]->GetBearing(), Rocks[i]->GetBearing());
+					    	break;
+						}
+					}
+					delete Rocks[i];
+					Rocks[i] = NULL;
+				}
+				else
+				{
+					Rocks[i]->Rotate(1);
+					Rocks[i]->Move();
+				}
+			}
+		}
+
+		// explosions //
+		for(int i = 0; i<MAX_EXPLODE; i++)
+		{
+			if (Explode[i] != NULL)
+			{
+				Explode[i]->SetData(Explode[i]->GetData()-1);
+				if (Explode[i]->GetData() < 0)
+				{
+					delete Explode[i];
+					Explode[i] = NULL;
+				}
+				else
+				{
+					Explode[i]->Move();
+					Explode[i]->Rotate(10);
+				}
+			}
+		}
+
+		// HANDLE COLLISIONS ////////////////////////////////////////////////
+
+		// ship1, Ship2 //
+		if ((Ship1 != NULL) && (Ship2 !=NULL))
+		{
+			if (Collide(Ship1, Ship2))
+			{
+				Ship1->SetHealth(Ship1->GetHealth()-3);
+				Rnd(2) ? Ship1->Rotate(20) : Ship1->Rotate(-20);
+				Ship1->Move(Ship2->GetVelocity(),
+				            Bearing(Ship2->GetX(), Ship2->GetY(),
+							        Ship1->GetX(), Ship1->GetY()));
+	
+				Ship2->SetHealth(Ship2->GetHealth()-3);
+				Rnd(2) ? Ship2->Rotate(20) : Ship2->Rotate(-20);
+				Ship2->Move(Ship1->GetVelocity(),
+				            Bearing(Ship1->GetX(), Ship1->GetY(),
+					       			Ship2->GetX(), Ship2->GetY()));
+
+				play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
+			}
+		}
+
+		
+		// Ship1 Missiles, Ship2 //
+		if (Ship2 != NULL)
+		{
+			for(int i=0; i<MAX_SHOTS; i++)
+			{
+				if (Shot1[i] != NULL)
+				{
+					if (Collide(Shot1[i], Ship2))
+					{
+						Ship2->SetHealth(Ship2->GetHealth()-1);
+						Rnd(2) ? Ship2->Rotate(20) : Ship2->Rotate(-20);
+						Ship2->Move(.06,
+				            		Bearing(Shot1[i]->GetX(), Shot1[i]->GetY(),
+					       			Ship2->GetX(), Ship2->GetY()));
+
+					    play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
+
+					    circlefill(buf, (int)Shot1[i]->GetX(), (int)Shot1[i]->GetY(),
+								5, 200);					       			
+						delete Shot1[i];
+						Shot1[i] = NULL;
+					}
+				}
+			}
+		}
+		
+		// Ship2 Missiles, Ship1 //
+		if (Ship1 != NULL)
+		{
+			for(int i=0; i<MAX_SHOTS; i++)
+			{
+				if (Shot2[i] != NULL)
+				{
+					if (Collide(Shot2[i], Ship1))
+					{
+						Ship1->SetHealth(Ship1->GetHealth()-1);
+						Rnd(2) ? Ship1->Rotate(20) : Ship1->Rotate(-20);
+						Ship1->Move(.06,
+				            		Bearing(Shot2[i]->GetX(), Shot2[i]->GetY(),
+					       			Ship1->GetX(), Ship1->GetY()));
+
+						play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
+
+						circlefill(buf, (int)Shot2[i]->GetX(), (int)Shot2[i]->GetY(),
+								5, 200);
+						
+						delete Shot2[i];
+						Shot2[i] = NULL;
+					}
+				}
+			}
+		}
+
+		
+		// Asteroids, Ship1 //
+		if (Ship1 != NULL)
+		{	
+			for (int i = 0; i<NUM_ROCKS; i++)
+			{
+				if (Rocks[i] != NULL)
+				{
+					if (Collide(Rocks[i], Ship1))
+					{
+						Ship1->SetHealth(Ship1->GetHealth()-5);
+						Rnd(2) ? Ship1->Rotate(20) : Ship1->Rotate(-20);
+						Ship1->Move(Rocks[i]->GetVelocity() * 2,
+				        	 	    Bearing(Rocks[i]->GetX(), Rocks[i]->GetY(),
+						          	    	Ship1->GetX(), Ship1->GetY()));
+	
+						Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
+						Rocks[i]->Move(Ship1->GetVelocity() / 2,
+				        		    Bearing(Ship1->GetX(), Ship1->GetY(),
+					       					Rocks[i]->GetX(), Rocks[i]->GetY()));
+
+					    play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
+					}
+						
+				}
+			}
+		}
+
+		
+		// Asteroids, Ship2 //
+		if (Ship2 != NULL)
+		{	
+			for (int i = 0; i<NUM_ROCKS; i++)
+			{
+				if (Rocks[i] != NULL)
+				{
+					if (Collide(Rocks[i], Ship2))
+					{
+						Ship2->SetHealth(Ship2->GetHealth()-5);
+						Rnd(2) ? Ship2->Rotate(20) : Ship2->Rotate(-20);
+						Ship2->Move(Rocks[i]->GetVelocity() * 2,
+				        	 	    Bearing(Rocks[i]->GetX(), Rocks[i]->GetY(),
+						          	    	Ship2->GetX(), Ship2->GetY()));
+	
+						Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
+						Rocks[i]->Move(Ship2->GetVelocity() / 2,
+				        		    Bearing(Ship2->GetX(), Ship2->GetY(),
+					       					Rocks[i]->GetX(), Rocks[i]->GetY()));
+
+					    play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
+					}
+						
+				}
+			}
+		}
+
+
+		// Asteroids, shot1 //
+		
+		for (int i = 0; i<NUM_ROCKS; i++)
+		{
+			if (Rocks[i] != NULL)
+			{
+				for(int c=0; c<MAX_SHOTS; c++)
+				{
+					if (Shot1[c] != NULL)
+					{
+						
+						if (Collide(Rocks[i], Shot1[c]))
+						{
+							Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
+							Rnd(2) ? Rocks[i]->Rotate(20) : Rocks[i]->Rotate(-20);
+							Rocks[i]->Move(.07,
+			            				Bearing(Shot1[c]->GetX(), Shot1[c]->GetY(),
+				       					Rocks[i]->GetX(), Rocks[i]->GetY()));
+
+				       		play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
+
+				       		circlefill(buf, (int)Shot1[c]->GetX(), (int)Shot1[c]->GetY(),
+								5, 200);
+				       			
+							delete Shot1[c];
+							Shot1[c] = NULL;
+						}
+						
+					}
+				}
+			}
+		}
+		
+		// Asteroids, shot2 //
+		
+		for (int i = 0; i<NUM_ROCKS; i++)
+		{
+			if (Rocks[i] != NULL)
+			{
+				for(int c=0; c<MAX_SHOTS; c++)
+				{
+					if (Shot2[c] != NULL)
+					{
+						
+						if (Collide(Rocks[i], Shot2[c]))
+						{
+							Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
+							Rnd(2) ? Rocks[i]->Rotate(20) : Rocks[i]->Rotate(-20);
+							Rocks[i]->Move(.07,
+			            				Bearing(Shot2[c]->GetX(), Shot2[c]->GetY(),
+				       					Rocks[i]->GetX(), Rocks[i]->GetY()));
+				       					
+				       		play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
+
+				       		circlefill(buf, (int)Shot2[c]->GetX(), (int)Shot2[c]->GetY(),
+								5, 200);				       		
+							delete Shot2[c];
+							Shot2[c] = NULL;
+						}
+						
+					}
+				}
+			}
+		}
+		
+		// DRAW EVERYTHING //////////////////////////////////////////////////
+		
+				// starfield ( by Shawn Hargraeves)
+		
+     /* animate the starfield */
+      for (int c=0; c<MAX_STARS; c++) {
+	 if (star[c].z <= itofix(1)) {
+	    x = itofix(random()&0xff);
+	    y = itofix(((random()&3)+1)*SCREEN_W);
+	    star[c].x = fmul(fcos(x), y);
+	    star[c].y = fmul(fsin(x), y);
+	    star[c].z = itofix((random() & 0x1f) + 0x20);
+	 }
+
+	 x = fdiv(star[c].x, star[c].z);
+	 y = fdiv(star[c].y, star[c].z);
+	 ix = (int)(x>>16) + SCREEN_W/2;
+	 iy = (int)(y>>16) + SCREEN_H/2;
+	 // putpixel(screen, star[c].ox, star[c].oy, 0);
+	 if ((ix >= 0) && (ix < SCREEN_W) && (iy >= 0) && (iy <= SCREEN_H)) {
+	    // if (getpixel(screen, ix, iy) == 0) {
+	       if (c < star_count) {
+		  c2 = 7-(int)(star[c].z>>18);
+		  putpixel(buf, ix, iy, 255-MID(0, c2, 7));
+	       }
+	       star[c].ox = ix;
+	       star[c].oy = iy;
+	    // }
+	    star[c].z -= 4096;
+	 }
+	 else
+	    star[c].z = 0;
+      }
+
+      if (star_count < MAX_STARS) {
+	 if (star_count_count++ >= 32) {
+	    star_count_count = 0;
+	    star_count++;
+	 }
+      }
+
+		// life bars //
+		if (Ship1 != NULL)
+		{
+			for (int i=Ship1->GetHealth(); i>0; i--)
+			{
+				blit(bar1, buf, 0, 0, 10, 199-i*2, 14, 1);
+			}
+
+			if (Energy1 > 0)
+			{
+				rectfill(buf, 25, 198, 30 , int(198 - (double(Energy1)/1000.0) * 50.0), 62);
+			}
+
+			hline(buf, 25, 193, 30, 0);
+			
+		}
+
+		if (Ship2 != NULL)
+		{
+			for (int i=Ship2->GetHealth(); i>0; i--)
+			{
+				blit(bar2, buf, 0, 0, 300, 199-i*2, 14, 1);
+			}
+
+			if (Energy2 > 0)
+			{
+				rectfill(buf, 293, 198, 298 , int(198 - (double(Energy2)/1000.0) * 50.0), 63);
+			}
+
+			hline(buf, 293, 193, 298, 0);
+		}
+
+		
+		// ships //
+		if (Ship1 != NULL)
+		{
+			Ship1->Draw(ship1, buf);
+		}
+
+		if (Ship2 != NULL)
+		{
+			Ship2->Draw(ship2, buf);
+		}
+
+		// missiles //
+		for (int i = 0; i<MAX_SHOTS; i++)
+		{
+			if (Shot1[i] != NULL)
+			{
+				Shot1[i]->Draw(ammo1, buf);
+			}
+
+			if (Shot2[i] != NULL)
+			{
+				Shot2[i]->Draw(ammo2, buf);
+			}
+		}
+			
+		// asteroids //
+		for (int i = 0; i<NUM_ROCKS; i++)
+		{
+			if (Rocks[i] != NULL)
+			{
+				Rocks[i]->Draw(rock, buf);
+			}
+		}
+
+		for(int i = 0; i<MAX_EXPLODE; i++)
+		{
+			if (Explode[i] != NULL)
+			{
+				Explode[i]->Draw(explode, buf);
+			}
+		}
+
+		vsync();
+		blit(buf, screen, 0, 0, 0, 0, 320, 200);
+     
+	}	
+
+
+	allegro_exit();
+
+	return 0;
+}
