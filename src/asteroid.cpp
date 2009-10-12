@@ -118,6 +118,14 @@ int main()
     bar2 = (BITMAP *)data[__Bar2].dat;
 
     buf = create_bitmap(320, 200);
+
+	int Ship1Color = makecol(97, 207, 207);
+	int Ship2Color = makecol(97, 255, 190);
+	int StarColor[8];
+	for (int i=0; i<8; i++)
+	{
+		StarColor[i] = makecol(255*i/7, 255*i/7, 255*i/7);
+	}
     
 
     // create objects ///////////////////////////////////////////////////////
@@ -640,7 +648,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         // if (getpixel(screen, ix, iy) == 0) {
            if (c < star_count) {
           c2 = 7-(int)(star[c].z>>18);
-          putpixel(buf, ix, iy, 255-MID(0, c2, 7)); // TODO: make colors work in truecolor
+          putpixel(buf, ix, iy, StarColor[MID(0, c2, 7)]);
            }
            star[c].ox = ix;
            star[c].oy = iy;
@@ -668,8 +676,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
             if (Energy1 > 0)
             {
-                // TODO: Color correctly in truecolor
-                rectfill(buf, 25, 198, 30 , int(198 - (double(Energy1)/1000.0) * 50.0), 62);
+                rectfill(buf, 25, 198, 30 , int(198 - (double(Energy1)/1000.0) * 50.0), Ship1Color);
             }
 
             hline(buf, 25, 193, 30, 0);
@@ -685,8 +692,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
             if (Energy2 > 0)
             {
-                // TODO: Color correctly in truecolor
-                rectfill(buf, 293, 198, 298 , int(198 - (double(Energy2)/1000.0) * 50.0), 63);
+                rectfill(buf, 293, 198, 298 , int(198 - (double(Energy2)/1000.0) * 50.0), Ship2Color);
             }
 
             hline(buf, 293, 193, 298, 0);
