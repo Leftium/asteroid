@@ -30,7 +30,7 @@ protected:
 
 public:
     static const int MAX_X = 320;
-    static const int MAX_Y = 200;
+    static const int MAX_Y = 240;
 
     inline CObject(double dInitX, double dInitY, double dInitVelocity,
             int nInitRadius, int nInitHealth, int nData = 0,

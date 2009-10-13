@@ -15,6 +15,9 @@
 #define MAX_SHOTS   10
 #define MAX_EXPLODE 10
 
+#define WORLD_W 320
+#define WORLD_H 240
+
 // COLLIDE //////////////////////////////////////////////////////////////////
 int Collide(CObject *p1, CObject *p2)
 {
@@ -26,7 +29,7 @@ int Collide(CObject *p1, CObject *p2)
 
 int gfx_card = GFX_AUTODETECT_WINDOWED;
 int gfx_w = 640;
-int gfx_h = 400;
+int gfx_h = 480;
 int gfx_bpp = 8;
 
 // MAIN /////////////////////////////////////////////////////////////////////
@@ -120,7 +123,7 @@ int main()
     bar1 = (BITMAP *)data[__Bar1].dat;
     bar2 = (BITMAP *)data[__Bar2].dat;
 
-    buf = create_bitmap(320, 200);
+    buf = create_bitmap(WORLD_W, WORLD_H);
 
     int Ship1Color = makecol(97, 207, 207);
     int Ship2Color = makecol(97, 255, 190);
@@ -159,7 +162,7 @@ int main()
     CObject *Rocks[NUM_ROCKS];
     for (int i = 0; i<NUM_ROCKS; i++)
     {
-        Rocks[i] = new CObject (Rnd(320), Rnd(200), .1,
+        Rocks[i] = new CObject (Rnd(WORLD_W), Rnd(WORLD_H), .1,
                                 5, 100, 1, Rnd(256), Rnd(256));
     }
 
@@ -760,7 +763,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         }
 
         vsync();
-        stretch_blit(buf, screen, 0, 0, 320, 200, 0, 0, SCREEN_W, SCREEN_H);
+        stretch_blit(buf, screen, 0, 0, WORLD_W, WORLD_H, 0, 0, SCREEN_W, SCREEN_H);
 
     }
 
