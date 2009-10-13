@@ -125,6 +125,7 @@ int main()
     int Ship1Color = makecol(97, 207, 207);
     int Ship2Color = makecol(97, 255, 190);
     int StarColor[8];
+    int WhiteColor = makecol(255, 255, 255);
     for (int i=0; i<8; i++)
     {
         StarColor[i] = makecol(255*i/7, 255*i/7, 255*i/7);
@@ -488,7 +489,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
 
                         circlefill(buf, (int)Shot1[i]->GetX(), (int)Shot1[i]->GetY(),
-                                5, 200);
+                                5, WhiteColor);
                         delete Shot1[i];
                         Shot1[i] = NULL;
                     }
@@ -514,7 +515,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
 
                         circlefill(buf, (int)Shot2[i]->GetX(), (int)Shot2[i]->GetY(),
-                                5, 200);
+                                5, WhiteColor);
 
                         delete Shot2[i];
                         Shot2[i] = NULL;
@@ -599,7 +600,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                                play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 
                                circlefill(buf, (int)Shot1[c]->GetX(), (int)Shot1[c]->GetY(),
-                                5, 200);
+                                5, WhiteColor);
 
                             delete Shot1[c];
                             Shot1[c] = NULL;
@@ -632,7 +633,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                                play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 
                                circlefill(buf, (int)Shot2[c]->GetX(), (int)Shot2[c]->GetY(),
-                                5, 200);
+                                5, WhiteColor);
                             delete Shot2[c];
                             Shot2[c] = NULL;
                         }
