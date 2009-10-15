@@ -692,31 +692,26 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         {
             for (int i=Ship1->GetHealth(); i>0; i--)
             {
-                blit(bar1, buf, 0, 0, 10, 199-i*2, 14, 1);
+                blit(bar1, buf, 0, 0, 10, buf->h-1-i*2, 14, 1);
             }
 
             if (Energy1 > 0)
             {
-                rectfill(buf, 25, 198, 30 , int(198 - (double(Energy1)/1000.0) * 50.0), Ship1Color);
+                rectfill(buf, 25, buf->h-2, 30 , int(buf->h-2 - (double(Energy1)/1000.0) * 50.0), Ship1Color);
             }
-
-            hline(buf, 25, 193, 30, 0);
-
         }
 
         if (Ship2 != NULL)
         {
             for (int i=Ship2->GetHealth(); i>0; i--)
             {
-                blit(bar2, buf, 0, 0, 300, 199-i*2, 14, 1);
+                blit(bar2, buf, 0, 0, 300, buf->h-1-i*2, 14, 1);
             }
 
             if (Energy2 > 0)
             {
-                rectfill(buf, 293, 198, 298 , int(198 - (double(Energy2)/1000.0) * 50.0), Ship2Color);
+                rectfill(buf, 293, buf->h-2, 298 , int(buf->h-2 - (double(Energy2)/1000.0) * 50.0), Ship2Color);
             }
-
-            hline(buf, 293, 193, 298, 0);
         }
 
 
