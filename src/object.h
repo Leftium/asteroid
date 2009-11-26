@@ -9,31 +9,25 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 
-// calculate distance between two points (x1,y1) and (x2,y2)
 inline double Distance(double x1, double y1, double x2, double y2)
 {
-    return sqrt(pow(x1-x2, 2) + pow(y1-y2, 2));
+    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
 
-// calculate angle between two vectors (x1,y1) and (x2,y2)
+// calculate Allegro binary angle of vector from (x1,y1) to (x2,y2)
 inline int Bearing(double x1, double y1, double x2, double y2)
 {
-    int angle;
+    // x and y args to atan2 swapped to rotate resulting angle 90 degrees
+    // (thus angle in respect to +Y axis instead of +X axis)
+    int angle = atan2(x1 - x2,
+                      y1 - y2 + DBL_MIN)  // DBL_MIN added to avoid division by zero
+                * 128 / M_PI;             // convert radians to Allegro binary angle
 
-    angle = fixtoi(fasin(ftofix((x2-x1) / (Distance(x1, y1, x2, y2)+.000000000000000000000000000000000001))));
-
-    if (angle >= 0 )
-    {
-        if (y1 > y2) return angle;
-        else return 128 - angle;
-    }
-    if (angle < 0)
-    {
-        if (y1 > y2) return 256 + angle;
-        else return 128 - angle;
-    }
-    return 0;
+    // ensure result in interval [0,256)
+	// subtract because positive Allegro angles go clockwise
+    return (256 - angle) % 256;
 }
 
 
