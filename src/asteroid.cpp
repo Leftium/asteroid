@@ -70,8 +70,24 @@ int main()
     if (set_gfx_mode(gfx_card, gfx_w, gfx_h, 0, 0) != 0) return 1;
     // END NEW GFX MODE
 
-    show_mouse(screen);
-    position_mouse(SCREEN_W+10, SCREEN_H+10);
+    // enable running in background if possible
+    if (set_display_switch_mode(SWITCH_BACKGROUND) != 0 &&
+        set_display_switch_mode(SWITCH_BACKAMNESIA) != 0)
+    {
+        // fail silently: just run paused when switched to background
+
+        // set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+        // allegro_message("Unable to set switch mode\n%s\n", allegro_error);
+        // return 1;
+    }
+
+    // work-around to get mouse pointer out of game area
+    // causes problems in fullscreen mode
+    if (is_windowed_mode())
+    {
+        show_mouse(screen);
+        position_mouse(SCREEN_W+10, SCREEN_H+10);
+    }
 
     set_volume(255,255);
 
@@ -133,7 +149,7 @@ int main()
     {
         StarColor[i] = makecol(255*i/7, 255*i/7, 255*i/7);
     }
-    
+
 
     // create objects ///////////////////////////////////////////////////////
     CObject *Ship1;
