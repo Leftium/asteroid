@@ -37,18 +37,24 @@ protected:
     double    dX;            // X loc of object
     double    dY;            // Y loc of object
 
+    // TODO: replace with velocity vector
     double    dOldX;        // last X loc of object
     double    dOldY;        // last Y loc of object
-
     int        nHeading;    // Angle object is moving
-    int        nBearing;    // Angle object is facing
-    int        nRadius;    // Radius of object
     double    dVelocity;    // Speed object is moving
 
+    // TODO: change to radians in double
+    int        nBearing;    // Angle object is facing
+
+    int        nRadius;    // Radius of object
+
+
+    // TODO: refactor into subclasses?
     int     nHealth;    // Amount of hits left
     int        nData;        // all-purpose variable
 
 public:
+    // TODO: move clipping logic outside of object class
     static const int MAX_X = 320;
     static const int MAX_Y = 240;
 
@@ -58,10 +64,14 @@ public:
 
     inline void Move(double dPower = 0, int nAngle = 0);
     inline void Rotate(int nAngle);
+
+    // TODO: Move rendering outside object class?
     inline void Draw(BITMAP *pSprite, BITMAP *pTarget);
 
+    // TODO: Move debugging outside of object class?
     inline void ShowStats(BITMAP *pDest);
 
+    // TODO: change to properties
     double     GetX() { return dX; };
     double     GetY() { return dY; };
 
