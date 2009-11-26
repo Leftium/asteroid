@@ -177,14 +177,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\bearing.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\distance.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\object.h"
 				>
 			</File>

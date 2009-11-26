@@ -6,7 +6,7 @@
 #include <stdlib.h>    // for rand()
 #include "asteroid.h"
 #include "object.h"
-#include "bearing.h"
+
 
 // #DEFINES /////////////////////////////////////////////////////////////////
 #define Rnd(x)      ((rand() % (x)))

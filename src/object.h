@@ -8,8 +8,34 @@
 
 #include <allegro.h>
 #include <stdio.h>
-#include "distance.h"
-#include "bearing.h"
+#include <math.h>
+
+// calculate distance between two points (x1,y1) and (x2,y2)
+inline double Distance(double x1, double y1, double x2, double y2)
+{
+    return sqrt(pow(x1-x2, 2) + pow(y1-y2, 2));
+}
+
+// calculate angle between two vectors (x1,y1) and (x2,y2)
+inline int Bearing(double x1, double y1, double x2, double y2)
+{
+    int angle;
+
+    angle = fixtoi(fasin(ftofix((x2-x1) / (Distance(x1, y1, x2, y2)+.000000000000000000000000000000000001))));
+
+    if (angle >= 0 )
+    {
+        if (y1 > y2) return angle;
+        else return 128 - angle;
+    }
+    if (angle < 0)
+    {
+        if (y1 > y2) return 256 + angle;
+        else return 128 - angle;
+    }
+    return 0;
+}
+
 
 class CObject
 {
