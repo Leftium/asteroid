@@ -18,9 +18,9 @@
 // to Allegro fixed point binary angle (0 == N, 0 to 256)
 fixed RAD2FIX(double r) { return itofix((int(256+64 - (r * RAD_PER_FIX))) % 256); }
 
-inline double Distance(double x1, double y1, double x2, double y2)
+inline double squareDistance(double x1, double y1, double x2, double y2)
 {
-    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+    return pow(x1 - x2, 2) + pow(y1 - y2, 2);
 }
 
 double relativeAngle(double x1, double y1, double x2, double y2)
@@ -40,8 +40,7 @@ double relativeAngle(double x1, double y1, double x2, double y2)
 class CObject
 {
 protected:
-    double    dX;            // X loc of object
-    double    dY;            // Y loc of object
+    double px, py;    // position
     double vx, vy;    // velocity
     double fx, fy;    // net force on object
     double m;         // mass of object
@@ -53,7 +52,7 @@ protected:
 
     double azimuth;
 
-    int        nRadius;    // Radius of object
+    int        radius;    // Radius of object
 
 
     // TODO: refactor into subclasses?
@@ -61,6 +60,8 @@ protected:
     int        nData;        // all-purpose variable
 
 public:
+    static bool isCollision(CObject *p1, CObject *p2);
+
     // TODO: move clipping logic outside of object class
     static const int MAX_X = 320;
     static const int MAX_Y = 240;
@@ -80,11 +81,11 @@ public:
     inline void ShowStats(BITMAP *pDest);
 
     // TODO: change to properties... or get rid of them
-    double     GetX() { return dX; };
-    double     GetY() { return dY; };
+    double     GetX() { return px; };
+    double     GetY() { return py; };
 
     __declspec ( property ( get=getspeed ) ) double speed;
-    double getspeed() { return Distance(0, 0, vx, vy); }
+    double getspeed() { return sqrt(squareDistance(0, 0, vx, vy)); }
 
     __declspec ( property ( get=getheading ) ) double heading;
     double getheading() { return relativeAngle(0, 0, vx, vy); }
@@ -100,15 +101,19 @@ public:
         }
     }
 
-    // only used for collide()
-    int     GetRadius() { return nRadius; };
-
     int        GetHealth() { return nHealth; };
     void    SetHealth(int nNewHealth ) { nHealth = nNewHealth; };
 
     int        GetData() { return nData; };
     void    SetData(int nNewData) { nData= nNewData; };
 };
+
+// ISCOLLISION //////////////////////////////////////////////////////////////////
+bool CObject::isCollision(CObject *p1, CObject *p2)
+{
+    return (squareDistance(p1->px, p1->py, p2->px, p2->py)) <
+           pow(double(p1->radius + p2->radius), 2);
+}
 
 CObject::CObject(double dInitX,
                  double dInitY,
@@ -119,9 +124,9 @@ CObject::CObject(double dInitX,
                  double _heading,
                  double _bearing)
 {
-    dX = dInitX;
-    dY = dInitY;
-    nRadius = nInitRadius;
+    px = dInitX;
+    py = dInitY;
+    radius = nInitRadius;
     nHealth = nInitHealth;
     nData = nInitData;
 
@@ -130,8 +135,8 @@ CObject::CObject(double dInitX,
     vx = cos(_heading) * _speed;
     vy = sin(_heading) * _speed;
 
-    dOldX = dX;
-    dOldY = dY;
+    dOldX = px;
+    dOldY = py;
 }
 
 inline void CObject::Move(double dPower, double angle)
@@ -139,42 +144,42 @@ inline void CObject::Move(double dPower, double angle)
     if (dPower != 0)    // moved by outside force (thrusters or collision)
     {
         // move
-        dX += cos(angle) * dPower;
-        dY += sin(angle) * dPower;
+        px += cos(angle) * dPower;
+        py += sin(angle) * dPower;
     }
     else    // not from outside force (moved by momentum)
     {
         // move
-        dX += cos(this->heading) * this->speed;
-        dY += sin(this->heading) * this->speed;
+        px += vx;
+        py += vy;
 
-        double newVelocity = Distance(dOldX, dOldY, dX, dY) * 0.995;
-        vx = cos( relativeAngle( dOldX, dOldY, dX, dY ) ) * newVelocity;
-        vy = sin( relativeAngle( dOldX, dOldY, dX, dY ) ) * newVelocity;
+        double newVelocity = sqrt(squareDistance(dOldX, dOldY, px, py)) * 0.995;
+        vx = cos( relativeAngle( dOldX, dOldY, px, py ) ) * newVelocity;
+        vy = sin( relativeAngle( dOldX, dOldY, px, py ) ) * newVelocity;
 
-        dOldX = dX; dOldY = dY;
+        dOldX = px; dOldY = py;
     }
 
     // wrap around
-    if (dX > MAX_X)
+    if (px > MAX_X)
     {
-        dX = dX - MAX_X;
+        px = px - MAX_X;
         dOldX = dOldX - MAX_X;
     }
-    if (dX < 0)
+    if (px < 0)
     {
-        dX = dX + MAX_X;
+        px = px + MAX_X;
         dOldX = dOldX + MAX_X;
     }
 
-    if (dY > MAX_Y)
+    if (py > MAX_Y)
     {
-        dY = dY - MAX_Y;
+        py = py - MAX_Y;
         dOldY = dOldY - MAX_Y;
     }
-    if (dY < 0)
+    if (py < 0)
     {
-        dY = dY + MAX_Y;
+        py = py + MAX_Y;
         dOldY = dOldY + MAX_Y;
     }
 }
@@ -186,10 +191,10 @@ inline void CObject::Rotate(double angle)
 
 inline void CObject::Draw(BITMAP *pSprite, BITMAP *pDest)
 {
-    rotate_sprite(pDest, pSprite, (int)dX-(pSprite->w>>1),
-                  MAX_Y-((int)dY+(pSprite->h>>1)), RAD2FIX( azimuth ));
+    rotate_sprite(pDest, pSprite, (int)px-(pSprite->w>>1),
+                  MAX_Y-((int)py+(pSprite->h>>1)), RAD2FIX( azimuth ));
 
-    // rect(pDest, dX-1, MAX_Y-dY-1, dX+1, MAX_Y-dY+1, makecol(255, 255, 255));
+    // rect(pDest, px-1, MAX_Y-py-1, px+1, MAX_Y-py+1, makecol(255, 255, 255));
 }
 
 inline void CObject::ShowStats(BITMAP *pDest)
@@ -198,10 +203,10 @@ inline void CObject::ShowStats(BITMAP *pDest)
     char szBuf[80];
 
 
-        sprintf(szBuf, "     x:% 010.5f", dX);
+        sprintf(szBuf, "     x:% 010.5f", px);
         textout(pDest, font, szBuf, 0, 10*y++, 255);
 
-        sprintf(szBuf, "     y:% 010.5f", dY);
+        sprintf(szBuf, "     y:% 010.5f", py);
         textout(pDest, font, szBuf, 0, 10*y++, 255);
 
         y++;
@@ -216,7 +221,6 @@ inline void CObject::ShowStats(BITMAP *pDest)
 
         sprintf(szBuf, " speed:% 010.5f", this->speed);
         textout(pDest, font, szBuf, 0, 10*y++, 255);
-
 }
 
 #endif

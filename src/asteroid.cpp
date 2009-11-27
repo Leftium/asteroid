@@ -18,15 +18,6 @@
 #define WORLD_W 320
 #define WORLD_H 240
 
-// COLLIDE //////////////////////////////////////////////////////////////////
-int Collide(CObject *p1, CObject *p2)
-{
-    if (Distance(p1->GetX(), p1->GetY(), p2->GetX(), p2->GetY()) <
-        (p1->GetRadius() + p2->GetRadius())) return 1;
-
-    return 0;
-}
-
 int gfx_card = GFX_AUTODETECT_WINDOWED;
 int gfx_w = 640;
 int gfx_h = 480;
@@ -480,7 +471,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         // ship1, Ship2 //
         if ((Ship1 != NULL) && (Ship2 !=NULL))
         {
-            if (Collide(Ship1, Ship2))
+            if (CObject::isCollision(Ship1, Ship2))
             {
                 Ship1->SetHealth(Ship1->GetHealth()-3);
                 Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
@@ -506,7 +497,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             {
                 if (Shot1[i] != NULL)
                 {
-                    if (Collide(Shot1[i], Ship2))
+                    if (CObject::isCollision(Shot1[i], Ship2))
                     {
                         Ship2->SetHealth(Ship2->GetHealth()-1);
                         Rnd(2) ? Ship2->Rotate(20 * FIX_PER_RAD) : Ship2->Rotate(-20 * FIX_PER_RAD);
@@ -532,7 +523,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             {
                 if (Shot2[i] != NULL)
                 {
-                    if (Collide(Shot2[i], Ship1))
+                    if (CObject::isCollision(Shot2[i], Ship1))
                     {
                         Ship1->SetHealth(Ship1->GetHealth()-1);
                         Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
@@ -559,7 +550,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             {
                 if (Rocks[i] != NULL)
                 {
-                    if (Collide(Rocks[i], Ship1))
+                    if (CObject::isCollision(Rocks[i], Ship1))
                     {
                         Ship1->SetHealth(Ship1->GetHealth()-5);
                         Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
@@ -586,7 +577,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             {
                 if (Rocks[i] != NULL)
                 {
-                    if (Collide(Rocks[i], Ship2))
+                    if (CObject::isCollision(Rocks[i], Ship2))
                     {
                         Ship2->SetHealth(Ship2->GetHealth()-5);
                         Rnd(2) ? Ship2->Rotate(20 * FIX_PER_RAD) : Ship2->Rotate(-20 * FIX_PER_RAD);
@@ -617,7 +608,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     if (Shot1[c] != NULL)
                     {
 
-                        if (Collide(Rocks[i], Shot1[c]))
+                        if (CObject::isCollision(Rocks[i], Shot1[c]))
                         {
                             Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
                             Rnd(2) ? Rocks[i]->Rotate(20 * FIX_PER_RAD) : Rocks[i]->Rotate(-20 * FIX_PER_RAD);
@@ -650,7 +641,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     if (Shot2[c] != NULL)
                     {
 
-                        if (Collide(Rocks[i], Shot2[c]))
+                        if (CObject::isCollision(Rocks[i], Shot2[c]))
                         {
                             Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
                             Rnd(2) ? Rocks[i]->Rotate(20 * FIX_PER_RAD) : Rocks[i]->Rotate(-20 * FIX_PER_RAD);
