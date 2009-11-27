@@ -11,7 +11,7 @@
 // #DEFINES /////////////////////////////////////////////////////////////////
 #define Rnd(x)      ((rand() % (x)))
 #define PAN(x)      (int((x) * 256) / SCREEN_W)
-#define NUM_ROCKS    7
+#define NUM_ROCKS    1
 #define MAX_SHOTS   10
 #define MAX_EXPLODE 10
 
@@ -36,6 +36,7 @@ int gfx_bpp = 8;
 int main()
 {
   // init stuff ///////////////////////////////////////////////////////////
+    srand(7942);
     allegro_init();
     install_timer();
     install_mouse();    // added for screen resolution selection dialog
@@ -272,12 +273,13 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             if(key[KEY_LEFT])    Ship2->Rotate(-3);
             if(key[KEY_RIGHT])    Ship2->Rotate( 3);
 
-            if(key[KEY_KANJI] || key[KEY_ALTGR])
+            if(key[KEY_KANJI] || key[KEY_ALTGR] || key[KEY_LCONTROL] || key[KEY_SPACE])
             {
 
                 if (Energy2 > -10)
                 {
-                    Energy2 -= 30;
+                    // Commmented out for dev purposes
+                    // Energy2 -= 30;
                 }
 
                 if (ShotDelay2 == 0 && Energy2 > 10)
@@ -286,11 +288,16 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     {
                         if (Shot2[i] == NULL)
                         {
-                            Shot2[i] = new CObject(Ship2->GetX(), Ship2->GetY(),
-                                           3, 4, 0, 25,
-                                           Ship2->GetBearing(), Ship2->GetBearing());
-                            Shot2[i]->Move();
-                            Shot2[i]->Move(Ship2->speed, Ship2->heading);
+                            Shot2[i] = new CObject(Ship2->GetX(),
+                                                   Ship2->GetY(),
+                                                   Ship2->speed,               // speed
+                                                   4,                          // radius
+                                                   0,                          // health
+                                                   25,                         // data
+                                                   RAD2FIX( Ship2->heading ),  // heading
+                                                   RAD2FIX( Ship2->heading )); // bearing
+
+                            Shot2[i]->Move(3, Ship2->GetBearing());
 
                             ShotDelay2 = 4;
                             play_sample(shoot, 64, PAN(Ship2->GetX()), 1000, 0);
@@ -478,14 +485,14 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 Ship1->SetHealth(Ship1->GetHealth()-3);
                 Rnd(2) ? Ship1->Rotate(20) : Ship1->Rotate(-20);
                 Ship1->Move(Ship2->speed,
-                            Bearing(Ship2->GetX(), Ship2->GetY(),
-                                    Ship1->GetX(), Ship1->GetY()));
+                            RAD2FIX( bearing(Ship2->GetX(), Ship2->GetY(),
+                                    Ship1->GetX(), Ship1->GetY())));
 
                 Ship2->SetHealth(Ship2->GetHealth()-3);
                 Rnd(2) ? Ship2->Rotate(20) : Ship2->Rotate(-20);
                 Ship2->Move(Ship1->speed,
-                            Bearing(Ship1->GetX(), Ship1->GetY(),
-                                       Ship2->GetX(), Ship2->GetY()));
+                            RAD2FIX( bearing(Ship1->GetX(), Ship1->GetY(),
+                                       Ship2->GetX(), Ship2->GetY())));
 
                 play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
             }
@@ -504,8 +511,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         Ship2->SetHealth(Ship2->GetHealth()-1);
                         Rnd(2) ? Ship2->Rotate(20) : Ship2->Rotate(-20);
                         Ship2->Move(.06,
-                                    Bearing(Shot1[i]->GetX(), Shot1[i]->GetY(),
-                                       Ship2->GetX(), Ship2->GetY()));
+                                    RAD2FIX( bearing(Shot1[i]->GetX(), Shot1[i]->GetY(),
+                                       Ship2->GetX(), Ship2->GetY())));
 
                         play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
 
@@ -530,8 +537,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         Ship1->SetHealth(Ship1->GetHealth()-1);
                         Rnd(2) ? Ship1->Rotate(20) : Ship1->Rotate(-20);
                         Ship1->Move(.06,
-                                    Bearing(Shot2[i]->GetX(), Shot2[i]->GetY(),
-                                       Ship1->GetX(), Ship1->GetY()));
+                                    RAD2FIX( bearing(Shot2[i]->GetX(), Shot2[i]->GetY(),
+                                       Ship1->GetX(), Ship1->GetY())));
 
                         play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
 
@@ -557,13 +564,13 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         Ship1->SetHealth(Ship1->GetHealth()-5);
                         Rnd(2) ? Ship1->Rotate(20) : Ship1->Rotate(-20);
                         Ship1->Move(Rocks[i]->speed * 2,
-                                     Bearing(Rocks[i]->GetX(), Rocks[i]->GetY(),
-                                              Ship1->GetX(), Ship1->GetY()));
+                                     RAD2FIX( bearing(Rocks[i]->GetX(), Rocks[i]->GetY(),
+                                              Ship1->GetX(), Ship1->GetY())));
 
                         Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
                         Rocks[i]->Move(Ship1->speed / 2,
-                                    Bearing(Ship1->GetX(), Ship1->GetY(),
-                                               Rocks[i]->GetX(), Rocks[i]->GetY()));
+                                    RAD2FIX( bearing(Ship1->GetX(), Ship1->GetY(),
+                                               Rocks[i]->GetX(), Rocks[i]->GetY())));
 
                         play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
                     }
@@ -584,13 +591,13 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         Ship2->SetHealth(Ship2->GetHealth()-5);
                         Rnd(2) ? Ship2->Rotate(20) : Ship2->Rotate(-20);
                         Ship2->Move(Rocks[i]->speed * 2,
-                                     Bearing(Rocks[i]->GetX(), Rocks[i]->GetY(),
-                                              Ship2->GetX(), Ship2->GetY()));
+                                     RAD2FIX( bearing(Rocks[i]->GetX(), Rocks[i]->GetY(),
+                                              Ship2->GetX(), Ship2->GetY())));
 
                         Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
                         Rocks[i]->Move(Ship2->speed / 2,
-                                    Bearing(Ship2->GetX(), Ship2->GetY(),
-                                               Rocks[i]->GetX(), Rocks[i]->GetY()));
+                                    RAD2FIX( bearing(Ship2->GetX(), Ship2->GetY(),
+                                               Rocks[i]->GetX(), Rocks[i]->GetY())));
 
                         play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
                     }
@@ -615,8 +622,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                             Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
                             Rnd(2) ? Rocks[i]->Rotate(20) : Rocks[i]->Rotate(-20);
                             Rocks[i]->Move(.07,
-                                        Bearing(Shot1[c]->GetX(), Shot1[c]->GetY(),
-                                           Rocks[i]->GetX(), Rocks[i]->GetY()));
+                                        RAD2FIX( bearing(Shot1[c]->GetX(), Shot1[c]->GetY(),
+                                           Rocks[i]->GetX(), Rocks[i]->GetY())));
 
                                play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 
@@ -648,8 +655,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                             Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
                             Rnd(2) ? Rocks[i]->Rotate(20) : Rocks[i]->Rotate(-20);
                             Rocks[i]->Move(.07,
-                                        Bearing(Shot2[c]->GetX(), Shot2[c]->GetY(),
-                                           Rocks[i]->GetX(), Rocks[i]->GetY()));
+                                        RAD2FIX( bearing(Shot2[c]->GetX(), Shot2[c]->GetY(),
+                                           Rocks[i]->GetX(), Rocks[i]->GetY())));
 
                                play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 

@@ -1,4 +1,4 @@
-// object.h
+/// object.h
 // CObject header
 
 // this is the base class for all objects in asteroids
@@ -24,21 +24,7 @@ inline double Distance(double x1, double y1, double x2, double y2)
     return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
 
-// calculate Allegro binary angle of vector from (x1,y1) to (x2,y2)
-inline int Bearing(double x1, double y1, double x2, double y2)
-{
-    // x and y args to atan2 swapped to rotate resulting angle 90 degrees
-    // (thus angle in respect to +Y axis instead of +X axis)
-    int angle = atan2(x1 - x2,
-                      y2 - y1 + DBL_MIN)  // DBL_MIN added to avoid division by zero
-                * RAD_PER_FIX;            // convert radians to Allegro binary angle
-
-    // ensure result in interval [0,256)
-	// subtract because positive Allegro angles go clockwise
-    return (256 - angle) % 256;
-}
-
-double radbearing(double x1, double y1, double x2, double y2)
+double bearing(double x1, double y1, double x2, double y2)
 {
     double angle = atan2(y2 - y1, x2 - x1 + DBL_MIN);
     if (angle >= 0)
@@ -59,6 +45,7 @@ protected:
     double    dY;            // Y loc of object
     double vx, vy;    // velocity
     double fx, fy;    // net force on object
+    double m;         // mass of object
 
 
     // TODO: replace with velocity vector
@@ -67,7 +54,7 @@ protected:
 
     // TODO: change to radians in double
     int        nBearing;    // Angle object is facing
-    double bearing;
+    double azimuth;
 
     int        nRadius;    // Radius of object
 
@@ -103,8 +90,9 @@ public:
     double getspeed() { return Distance(0, 0, vx, vy); }
 
     __declspec ( property ( get=getheading ) ) double heading;
-    double getheading() { return radbearing(0, 0, vx, vy); }
+    double getheading() { return bearing(0, 0, vx, vy); }
 
+    // only used for collide()
     int     GetRadius() { return nRadius; };
 
     int     GetBearing() { return nBearing; };
@@ -127,7 +115,7 @@ CObject::CObject(double dInitX, double dInitY, double _speed,
     nData = nInitData;
     nBearing = nInitBearing; ///
 
-    bearing = nInitBearing * FIX_PER_RAD;
+    azimuth = nInitBearing * FIX_PER_RAD;
 
     vx = cos( FIX2RAD( _heading ) ) * _speed;
     vy = sin( FIX2RAD( _heading ) ) * _speed;
@@ -146,16 +134,16 @@ inline void CObject::Move(double dPower, int nAngle)
     }
     else    // not from outside force (moved by momentum)
     {
-        dOldX = dX; dOldY = dY;
-
         // move
         dX += cos(this->heading) * this->speed;
         dY += sin(this->heading) * this->speed;
-    }
 
-    double currentDistance = Distance(dOldX, dOldY, dX, dY);
-    vx = cos( radbearing( dOldX, dOldY, dX, dY ) ) * currentDistance;
-    vy = sin( radbearing( dOldX, dOldY, dX, dY ) ) * currentDistance;
+        double newVelocity = Distance(dOldX, dOldY, dX, dY) * 0.995;
+        vx = cos( bearing( dOldX, dOldY, dX, dY ) ) * newVelocity;
+        vy = sin( bearing( dOldX, dOldY, dX, dY ) ) * newVelocity;
+
+        dOldX = dX; dOldY = dY;
+    }
 
     // wrap around
     if (dX > MAX_X)
@@ -192,6 +180,8 @@ inline void CObject::Draw(BITMAP *pSprite, BITMAP *pDest)
 {
     rotate_sprite(pDest, pSprite, (int)dX-(pSprite->w>>1),
                   MAX_Y-((int)dY+(pSprite->h>>1)), itofix(nBearing));
+
+    // rect(pDest, dX-1, MAX_Y-dY-1, dX+1, MAX_Y-dY+1, makecol(255, 255, 255));
 }
 
 inline void CObject::ShowStats(BITMAP *pDest)
