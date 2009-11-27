@@ -197,6 +197,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         clear(buf);
 
         // HANDLE KEYPRESSES ////////////////////////////////////////////////
+// action: ship: handle input
 
         // player 1 //
         if (Ship1 != NULL)
@@ -279,6 +280,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     {
                         if (Shot2[i] == NULL)
                         {
+// action: ship: spawn projectile
                             Shot2[i] = new CObject(Ship2->GetX(),
                                                    Ship2->GetY(),
                                                    Ship2->speed,    // speed
@@ -302,6 +304,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
         }
 
+// action: ship: render engine sound
         if(fPlayEngine1)
         {
             if (Ship1 != NULL)
@@ -326,7 +329,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
 
         // HANDLE MOVEMENT //////////////////////////////////////////////////
-
+// action: ship: spawn explosion
         // player 1 //
         if (Ship1 != NULL)
         {
@@ -347,10 +350,13 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             }
             else
             {
+// action: ship: limit speed
                 // TODO: Move limits to Ship object subclass
                 /// if (Ship1->speed >  2) Ship1->SetVelocity( 2);
                 /// if (Ship1->speed < -2) Ship1->SetVelocity(-2);
+// action: ship: move
                 Ship1->Move();
+// action: ship: apply friction
                 /// Ship1->SetVelocity(Ship1->speed * .99);
             }
         }
@@ -397,6 +403,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 }
                 else
                 {
+// action: projectile: move
                     Shot1[i]->Move();
                     Shot1[i]->Rotate(6 * FIX_PER_RAD);
                 }
@@ -428,6 +435,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 {
                     for(int c = 0; c<MAX_EXPLODE; c++)
                     {
+// action: rock: explosion animation
                         if (Explode[c] == NULL)
                         {
                             Explode[c] = new CObject(Rocks[i]->GetX(), Rocks[i]->GetY(),
@@ -442,6 +450,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 else
                 {
                     Rocks[i]->Rotate(1 * FIX_PER_RAD);
+// action: rock: move
                     Rocks[i]->Move();
                 }
             }
@@ -473,6 +482,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         {
             if (CObject::isCollision(Ship1, Ship2))
             {
+// action: ship: collision
                 Ship1->SetHealth(Ship1->GetHealth()-3);
                 Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
                 Ship1->Move(Ship2->speed,
@@ -734,6 +744,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         // ships //
         if (Ship1 != NULL)
         {
+// action: ship: render graphics
             Ship1->Draw(ship1, buf);
         }
 
