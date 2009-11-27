@@ -58,13 +58,12 @@ protected:
     double    dX;            // X loc of object
     double    dY;            // Y loc of object
     double vx, vy;    // velocity
+    double fx, fy;    // net force on object
 
 
     // TODO: replace with velocity vector
     double    dOldX;        // last X loc of object
     double    dOldY;        // last Y loc of object
-    int        nHeading;    // Angle object is moving
-    double    dVelocity;    // Speed object is moving
 
     // TODO: change to radians in double
     int        nBearing;    // Angle object is facing
@@ -109,16 +108,12 @@ public:
     int     GetRadius() { return nRadius; };
 
     int     GetBearing() { return nBearing; };
-    int     GetHeading() { return nHeading; };
 
     int        GetHealth() { return nHealth; };
     void    SetHealth(int nNewHealth ) { nHealth = nNewHealth; };
 
     int        GetData() { return nData; };
     void    SetData(int nNewData) { nData= nNewData; };
-
-    double    GetVelocity() { return dVelocity; };
-    void    SetVelocity(double dNewVelocity) { dVelocity = dNewVelocity; };
 };
 
 CObject::CObject(double dInitX, double dInitY, double _speed,
@@ -127,11 +122,9 @@ CObject::CObject(double dInitX, double dInitY, double _speed,
 {
     dX = dInitX;
     dY = dInitY;
-    dVelocity = _speed; ///
     nRadius = nInitRadius;
     nHealth = nInitHealth;
     nData = nInitData;
-    nHeading = _heading;
     nBearing = nInitBearing; ///
 
     bearing = nInitBearing * FIX_PER_RAD;
@@ -148,26 +141,21 @@ inline void CObject::Move(double dPower, int nAngle)
     if (dPower != 0)    // moved by outside force (thrusters or collision)
     {
         // move
-        dX += (fixtof( fsin(itofix(nAngle))) * dPower);
-        dY += (fixtof( fcos(itofix(nAngle))) * dPower);
-
-        nHeading = Bearing(dOldX, dOldY, dX, dY);
+        dX += cos( FIX2RAD(nAngle) ) * dPower;
+        dY += sin( FIX2RAD(nAngle) ) * dPower;
     }
-
     else    // not from outside force (moved by momentum)
     {
         dOldX = dX; dOldY = dY;
 
         // move
-        dX += (fixtof( fsin(itofix(nHeading))) * dVelocity);
-        dY += (fixtof( fcos(itofix(nHeading))) * dVelocity);
-
-        nHeading = Bearing(dOldX, dOldY, dX, dY);
+        dX += cos(this->heading) * this->speed;
+        dY += sin(this->heading) * this->speed;
     }
 
-    SetVelocity(Distance(dOldX, dOldY, dX, dY));
-    vx = GetVelocity() * cos( FIX2RAD( GetBearing() ) ); 
-    vy = GetVelocity() * sin( FIX2RAD( GetBearing() ) );
+    double currentDistance = Distance(dOldX, dOldY, dX, dY);
+    vx = cos( radbearing( dOldX, dOldY, dX, dY ) ) * currentDistance;
+    vy = sin( radbearing( dOldX, dOldY, dX, dY ) ) * currentDistance;
 
     // wrap around
     if (dX > MAX_X)
@@ -220,16 +208,6 @@ inline void CObject::ShowStats(BITMAP *pDest)
 
         y++;
 
-        sprintf(szBuf, "     h:% 04d", nHeading);
-        textout(pDest, font, szBuf, 0, 10*y++, 255);
-
-        double rad = FIX2RAD(nHeading);
-        sprintf(szBuf, "f2r(h):% 010.5f", rad);
-        textout(pDest, font, szBuf, 0, 10*y++, 255);
-
-        sprintf(szBuf, "r2f(h):% 04d", RAD2FIX(rad));
-        textout(pDest, font, szBuf, 0, 10*y++, 255);
-
         sprintf(szBuf, "     b:% 04d", nBearing);
         textout(pDest, font, szBuf, 0, 10*y++, 255);
 
@@ -237,9 +215,6 @@ inline void CObject::ShowStats(BITMAP *pDest)
         textout(pDest, font, szBuf, 0, 10*y++, 255);
 
         y++;
-
-        sprintf(szBuf, "     v:% 010.5f", dVelocity);
-        textout(pDest, font, szBuf, 0, 10*y++, 255);
 
         sprintf(szBuf, " speed:% 010.5f", this->speed);
         textout(pDest, font, szBuf, 0, 10*y++, 255);

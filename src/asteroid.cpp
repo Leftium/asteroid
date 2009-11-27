@@ -242,7 +242,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                                            Ship1->GetBearing(), Ship1->GetBearing());
 
                             Shot1[i]->Move();
-                            Shot1[i]->Move(Ship1->GetVelocity(), Ship1->GetHeading());
+                            Shot1[i]->Move(Ship1->speed, Ship1->heading);
                             ShotDelay1 = 4;
                             play_sample(shoot, 64, PAN(Ship1->GetX()), 1000, 0);
                             break;
@@ -290,7 +290,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                                            3, 4, 0, 25,
                                            Ship2->GetBearing(), Ship2->GetBearing());
                             Shot2[i]->Move();
-                            Shot2[i]->Move(Ship2->GetVelocity(), Ship2->GetHeading());
+                            Shot2[i]->Move(Ship2->speed, Ship2->heading);
 
                             ShotDelay2 = 4;
                             play_sample(shoot, 64, PAN(Ship2->GetX()), 1000, 0);
@@ -339,7 +339,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     if (Explode[i] == NULL)
                     {
                         Explode[i] = new CObject(Ship1->GetX(), Ship1->GetY(),
-                                       Ship1->GetVelocity(), 0, 0, 30,
+                                       Ship1->speed, 0, 0, 30,
                                        Ship1->GetBearing(), Ship1->GetBearing());
                         break;
                     }
@@ -349,10 +349,11 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             }
             else
             {
-                if (Ship1->GetVelocity() >  2) Ship1->SetVelocity( 2);
-                if (Ship1->GetVelocity() < -2) Ship1->SetVelocity(-2);
+                // TODO: Move limits to Ship object subclass
+                /// if (Ship1->speed >  2) Ship1->SetVelocity( 2);
+                /// if (Ship1->speed < -2) Ship1->SetVelocity(-2);
                 Ship1->Move();
-                Ship1->SetVelocity(Ship1->GetVelocity() * .99);
+                /// Ship1->SetVelocity(Ship1->speed * .99);
             }
         }
 
@@ -366,7 +367,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     if (Explode[i] == NULL)
                     {
                         Explode[i] = new CObject(Ship2->GetX(), Ship2->GetY(),
-                                       Ship2->GetVelocity(), 0, 0, 30,
+                                       Ship2->speed, 0, 0, 30,
                                        Ship2->GetBearing(), Ship2->GetBearing());
                         break;
                     }
@@ -376,10 +377,11 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             }
             else
             {
-                if (Ship2->GetVelocity() >  2) Ship2->SetVelocity( 2);
-                if (Ship2->GetVelocity() < -2) Ship2->SetVelocity(-2);
+                // TODO: Move limits to Ship object subclass
+                /// if (Ship2->speed >  2) Ship2->SetVelocity( 2);
+                /// if (Ship2->speed < -2) Ship2->SetVelocity(-2);
                 Ship2->Move();
-                Ship2->SetVelocity(Ship2->GetVelocity() * .99);
+                /// Ship2->SetVelocity(Ship2->speed * .99);
             }
         }
 
@@ -431,7 +433,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         if (Explode[c] == NULL)
                         {
                             Explode[c] = new CObject(Rocks[i]->GetX(), Rocks[i]->GetY(),
-                                           Rocks[i]->GetVelocity(), 0, 0, 30,
+                                           Rocks[i]->speed, 0, 0, 30,
                                            Rocks[i]->GetBearing(), Rocks[i]->GetBearing());
                             break;
                         }
@@ -475,13 +477,13 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             {
                 Ship1->SetHealth(Ship1->GetHealth()-3);
                 Rnd(2) ? Ship1->Rotate(20) : Ship1->Rotate(-20);
-                Ship1->Move(Ship2->GetVelocity(),
+                Ship1->Move(Ship2->speed,
                             Bearing(Ship2->GetX(), Ship2->GetY(),
                                     Ship1->GetX(), Ship1->GetY()));
 
                 Ship2->SetHealth(Ship2->GetHealth()-3);
                 Rnd(2) ? Ship2->Rotate(20) : Ship2->Rotate(-20);
-                Ship2->Move(Ship1->GetVelocity(),
+                Ship2->Move(Ship1->speed,
                             Bearing(Ship1->GetX(), Ship1->GetY(),
                                        Ship2->GetX(), Ship2->GetY()));
 
@@ -554,12 +556,12 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     {
                         Ship1->SetHealth(Ship1->GetHealth()-5);
                         Rnd(2) ? Ship1->Rotate(20) : Ship1->Rotate(-20);
-                        Ship1->Move(Rocks[i]->GetVelocity() * 2,
+                        Ship1->Move(Rocks[i]->speed * 2,
                                      Bearing(Rocks[i]->GetX(), Rocks[i]->GetY(),
                                               Ship1->GetX(), Ship1->GetY()));
 
                         Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
-                        Rocks[i]->Move(Ship1->GetVelocity() / 2,
+                        Rocks[i]->Move(Ship1->speed / 2,
                                     Bearing(Ship1->GetX(), Ship1->GetY(),
                                                Rocks[i]->GetX(), Rocks[i]->GetY()));
 
@@ -581,12 +583,12 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     {
                         Ship2->SetHealth(Ship2->GetHealth()-5);
                         Rnd(2) ? Ship2->Rotate(20) : Ship2->Rotate(-20);
-                        Ship2->Move(Rocks[i]->GetVelocity() * 2,
+                        Ship2->Move(Rocks[i]->speed * 2,
                                      Bearing(Rocks[i]->GetX(), Rocks[i]->GetY(),
                                               Ship2->GetX(), Ship2->GetY()));
 
                         Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
-                        Rocks[i]->Move(Ship2->GetVelocity() / 2,
+                        Rocks[i]->Move(Ship2->speed / 2,
                                     Bearing(Ship2->GetX(), Ship2->GetY(),
                                                Rocks[i]->GetX(), Rocks[i]->GetY()));
 
