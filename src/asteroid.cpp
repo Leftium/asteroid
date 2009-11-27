@@ -11,7 +11,7 @@
 // #DEFINES /////////////////////////////////////////////////////////////////
 #define Rnd(x)      ((rand() % (x)))
 #define PAN(x)      (int((x) * 256) / SCREEN_W)
-#define NUM_ROCKS    1
+#define NUM_ROCKS   15
 #define MAX_SHOTS   10
 #define MAX_EXPLODE 10
 
@@ -171,7 +171,7 @@ int main()
     for (int i = 0; i<NUM_ROCKS; i++)
     {
         Rocks[i] = new CObject (Rnd(WORLD_W), Rnd(WORLD_H), 0.1,
-                                5, 100, 1, rand() * 2 * M_PI, rand() * 2 * M_PI);
+                                5, 100, 1, (rand()/(double)RAND_MAX)*2*M_PI, (rand()/(double)RAND_MAX)*2*M_PI);
     }
 
     CObject *Explode[MAX_EXPLODE];
