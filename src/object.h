@@ -45,7 +45,7 @@ protected:
     double fx, fy;    // net force on object
     double m;         // mass of object
     double azimuth;   // direction object is facing
-    int    radius;    // Radius of object
+    double radius;    // Radius of object
 
     // TODO: refactor into subclasses?
     int    nHealth;   // Amount of hits left
@@ -64,7 +64,7 @@ public:
     void applyForces();
 
     inline CObject(double dInitX, double dInitY, double dInitVelocity,
-            int nInitRadius, int nInitHealth, int nData = 0,
+            double nInitRadius, int nInitHealth, int nData = 0,
             double nInitHeading = 0, double nInitBearing = 0);
 
     inline void Rotate(double angle);
@@ -106,14 +106,14 @@ public:
 // ISCOLLISION //////////////////////////////////////////////////////////////////
 bool CObject::isCollision(CObject *p1, CObject *p2)
 {
-    return (squareDistance(p1->px, p1->py, p2->px, p2->py)) <
-           pow(double(p1->radius + p2->radius), 2);
+    return ( ( squareDistance(p1->px, p1->py, p2->px, p2->py ) ) <
+             ( pow(p1->radius + p2->radius, 2) ) );
 }
 
 CObject::CObject(double dInitX,
                  double dInitY,
                  double _speed,
-                 int nInitRadius,
+                 double nInitRadius,
                  int nInitHealth,
                  int nInitData,
                  double _heading,
