@@ -60,7 +60,7 @@ int main()
     gui_bg_color = 0;
 
     gfx_bpp = desktop_color_depth();
-    if (!gfx_mode_select_ex(&gfx_card, &gfx_w, &gfx_h, &gfx_bpp)) {
+    if (false && !gfx_mode_select_ex(&gfx_card, &gfx_w, &gfx_h, &gfx_bpp)) {
         return -1;
     }
     if (gfx_bpp != 0) {
@@ -507,7 +507,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
                         play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
 
-                        circlefill(buf, (int)Shot1[i]->GetX(), (int)Shot1[i]->GetY(),
+                        circlefill(buf, (int)Shot1[i]->GetX(), WORLD_H - (int)Shot1[i]->GetY(),
                                 5, WhiteColor);
                         delete Shot1[i];
                         Shot1[i] = NULL;
@@ -533,7 +533,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
                         play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
 
-                        circlefill(buf, (int)Shot2[i]->GetX(), (int)Shot2[i]->GetY(),
+                        circlefill(buf, (int)Shot2[i]->GetX(), WORLD_H - (int)Shot2[i]->GetY(),
                                 5, WhiteColor);
 
                         delete Shot2[i];
@@ -618,7 +618,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
                                play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 
-                               circlefill(buf, (int)Shot1[c]->GetX(), (int)Shot1[c]->GetY(),
+                               circlefill(buf, (int)Shot1[c]->GetX(), WORLD_H - (int)Shot1[c]->GetY(),
                                 5, WhiteColor);
 
                             delete Shot1[c];
@@ -651,7 +651,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
                                play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 
-                               circlefill(buf, (int)Shot2[c]->GetX(), (int)Shot2[c]->GetY(),
+                               circlefill(buf, (int)Shot2[c]->GetX(), WORLD_H - (int)Shot2[c]->GetY(),
                                 5, WhiteColor);
                             delete Shot2[c];
                             Shot2[c] = NULL;
@@ -771,6 +771,11 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             {
                 Explode[i]->Draw(explode, buf);
             }
+        }
+
+        if (Ship2 != NULL)
+        {
+            Ship2->ShowStats(screen);
         }
 
         vsync();
