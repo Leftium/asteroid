@@ -12,19 +12,18 @@
 #include <float.h>
 
 #define RAD_PER_FIX (128.0 / M_PI)
-#define FIX_PER_RAD (M_PI / 128)
+#define FIX_PER_RAD (M_PI / 128.0)
 
-// convert between Allegro binary angle (0 == N, 0 to 256)
-// and radians (0 == E, O to 2PI)
-double FIX2RAD(int f) { return (((256+64) - (f)) % 256 * FIX_PER_RAD); }
-int RAD2FIX(double r) { return (int(256+64 - (r * RAD_PER_FIX))) % 256; }
+// convert radians (0 == E, O to 2PI)
+// to Allegro fixed point binary angle (0 == N, 0 to 256)
+fixed RAD2FIX(double r) { return itofix((int(256+64 - (r * RAD_PER_FIX))) % 256); }
 
 inline double Distance(double x1, double y1, double x2, double y2)
 {
     return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
 
-double bearing(double x1, double y1, double x2, double y2)
+double relativeAngle(double x1, double y1, double x2, double y2)
 {
     double angle = atan2(y2 - y1, x2 - x1 + DBL_MIN);
     if (angle >= 0)
@@ -52,8 +51,6 @@ protected:
     double    dOldX;        // last X loc of object
     double    dOldY;        // last Y loc of object
 
-    // TODO: change to radians in double
-    int        nBearing;    // Angle object is facing
     double azimuth;
 
     int        nRadius;    // Radius of object
@@ -70,11 +67,11 @@ public:
 
     inline CObject(double dInitX, double dInitY, double dInitVelocity,
             int nInitRadius, int nInitHealth, int nData = 0,
-            int nInitHeading = 0, int nInitBearing = 0);
+            double nInitHeading = 0, double nInitBearing = 0);
 
     // TODO: split into impulse and one "apply forces" function
-    inline void Move(double dPower = 0, int nAngle = 0);
-    inline void Rotate(int nAngle);
+    inline void Move(double dPower = 0, double nAngle = 0);
+    inline void Rotate(double angle);
 
     // TODO: Move rendering outside object class?
     inline void Draw(BITMAP *pSprite, BITMAP *pTarget);
@@ -82,7 +79,7 @@ public:
     // TODO: Move debugging outside of object class?
     inline void ShowStats(BITMAP *pDest);
 
-    // TODO: change to properties
+    // TODO: change to properties... or get rid of them
     double     GetX() { return dX; };
     double     GetY() { return dY; };
 
@@ -90,12 +87,21 @@ public:
     double getspeed() { return Distance(0, 0, vx, vy); }
 
     __declspec ( property ( get=getheading ) ) double heading;
-    double getheading() { return bearing(0, 0, vx, vy); }
+    double getheading() { return relativeAngle(0, 0, vx, vy); }
+
+    __declspec ( property ( get=getbearing, put=setbearing ) ) double bearing;
+    double getbearing() { return azimuth; }
+    void setbearing(double b)
+    {
+        azimuth = fmod(b, 2 * M_PI);
+        if (azimuth < 0)
+        {
+            azimuth += 2 * M_PI;
+        }
+    }
 
     // only used for collide()
     int     GetRadius() { return nRadius; };
-
-    int     GetBearing() { return nBearing; };
 
     int        GetHealth() { return nHealth; };
     void    SetHealth(int nNewHealth ) { nHealth = nNewHealth; };
@@ -104,33 +110,37 @@ public:
     void    SetData(int nNewData) { nData= nNewData; };
 };
 
-CObject::CObject(double dInitX, double dInitY, double _speed,
-                 int nInitRadius, int nInitHealth, int nInitData,
-                 int _heading, int nInitBearing)
+CObject::CObject(double dInitX,
+                 double dInitY,
+                 double _speed,
+                 int nInitRadius,
+                 int nInitHealth,
+                 int nInitData,
+                 double _heading,
+                 double _bearing)
 {
     dX = dInitX;
     dY = dInitY;
     nRadius = nInitRadius;
     nHealth = nInitHealth;
     nData = nInitData;
-    nBearing = nInitBearing; ///
 
-    azimuth = nInitBearing * FIX_PER_RAD;
+    this->bearing = _bearing;
 
-    vx = cos( FIX2RAD( _heading ) ) * _speed;
-    vy = sin( FIX2RAD( _heading ) ) * _speed;
+    vx = cos(_heading) * _speed;
+    vy = sin(_heading) * _speed;
 
     dOldX = dX;
     dOldY = dY;
 }
 
-inline void CObject::Move(double dPower, int nAngle)
+inline void CObject::Move(double dPower, double angle)
 {
     if (dPower != 0)    // moved by outside force (thrusters or collision)
     {
         // move
-        dX += cos( FIX2RAD(nAngle) ) * dPower;
-        dY += sin( FIX2RAD(nAngle) ) * dPower;
+        dX += cos(angle) * dPower;
+        dY += sin(angle) * dPower;
     }
     else    // not from outside force (moved by momentum)
     {
@@ -139,8 +149,8 @@ inline void CObject::Move(double dPower, int nAngle)
         dY += sin(this->heading) * this->speed;
 
         double newVelocity = Distance(dOldX, dOldY, dX, dY) * 0.995;
-        vx = cos( bearing( dOldX, dOldY, dX, dY ) ) * newVelocity;
-        vy = sin( bearing( dOldX, dOldY, dX, dY ) ) * newVelocity;
+        vx = cos( relativeAngle( dOldX, dOldY, dX, dY ) ) * newVelocity;
+        vy = sin( relativeAngle( dOldX, dOldY, dX, dY ) ) * newVelocity;
 
         dOldX = dX; dOldY = dY;
     }
@@ -169,17 +179,15 @@ inline void CObject::Move(double dPower, int nAngle)
     }
 }
 
-inline void CObject::Rotate(int nAngle)
+inline void CObject::Rotate(double angle)
 {
-    nBearing += nAngle;
-    if (nBearing > 255) nBearing = (nBearing - 255);
-    if (nBearing < 0 ) nBearing = 255 + nBearing;
+    this->bearing += angle;
 }
 
 inline void CObject::Draw(BITMAP *pSprite, BITMAP *pDest)
 {
     rotate_sprite(pDest, pSprite, (int)dX-(pSprite->w>>1),
-                  MAX_Y-((int)dY+(pSprite->h>>1)), itofix(nBearing));
+                  MAX_Y-((int)dY+(pSprite->h>>1)), RAD2FIX( azimuth ));
 
     // rect(pDest, dX-1, MAX_Y-dY-1, dX+1, MAX_Y-dY+1, makecol(255, 255, 255));
 }
@@ -198,7 +206,7 @@ inline void CObject::ShowStats(BITMAP *pDest)
 
         y++;
 
-        sprintf(szBuf, "     b:% 04d", nBearing);
+        sprintf(szBuf, "     b:% 010.5f", azimuth);
         textout(pDest, font, szBuf, 0, 10*y++, 255);
 
         sprintf(szBuf, "     H:% 010.5f", this->heading);
