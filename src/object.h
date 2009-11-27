@@ -44,32 +44,29 @@ protected:
     double vx, vy;    // velocity
     double fx, fy;    // net force on object
     double m;         // mass of object
-
-    // TODO: replace with velocity vector
-    double dOldX;     // last X loc of object
-    double dOldY;     // last Y loc of object
-
-    double azimuth;
-
+    double azimuth;   // direction object is facing
     int    radius;    // Radius of object
 
     // TODO: refactor into subclasses?
     int    nHealth;   // Amount of hits left
     int    nData;     // all-purpose variable
 
-public:
-    static bool isCollision(CObject *p1, CObject *p2);
+    void wrapPosition();
 
+public:
     // TODO: move clipping logic outside of object class
     static const int MAX_X = 320;
     static const int MAX_Y = 240;
+
+    static bool isCollision(CObject *p1, CObject *p2);
+
+    void addForce(double magnitude, double angle);
+    void applyForces();
 
     inline CObject(double dInitX, double dInitY, double dInitVelocity,
             int nInitRadius, int nInitHealth, int nData = 0,
             double nInitHeading = 0, double nInitBearing = 0);
 
-    // TODO: split into impulse and one "apply forces" function
-    inline void Move(double dPower = 0, double nAngle = 0);
     inline void Rotate(double angle);
 
     // TODO: Move rendering outside object class?
@@ -133,53 +130,44 @@ CObject::CObject(double dInitX,
     vx = cos(_heading) * _speed;
     vy = sin(_heading) * _speed;
 
-    dOldX = px;
-    dOldY = py;
+    m = 100;
 }
 
-inline void CObject::Move(double dPower, double angle)
+void CObject::addForce(double magnitude, double angle)
 {
-    if (dPower != 0)    // moved by outside force (thrusters or collision)
-    {
-        // move
-        px += cos(angle) * dPower;
-        py += sin(angle) * dPower;
-    }
-    else    // not from outside force (moved by momentum)
-    {
-        // move
-        px += vx;
-        py += vy;
+    fx = cos(angle) * magnitude;
+    fy = sin(angle) * magnitude;
+}
 
-        double newVelocity = sqrt(squareDistance(dOldX, dOldY, px, py)) * 0.995;
-        vx = cos( relativeAngle( dOldX, dOldY, px, py ) ) * newVelocity;
-        vy = sin( relativeAngle( dOldX, dOldY, px, py ) ) * newVelocity;
+// apply netforce and convert to delta velocity
+void CObject::applyForces()
+{
+    // add velocity from impulse
+    vx += fx / m;
+    vy += fy / m;
 
-        dOldX = px; dOldY = py;
-    }
+    // apply some friction
+    vx *= 0.995;
+    vy *= 0.995;
 
-    // wrap around
-    if (px > MAX_X)
-    {
-        px = px - MAX_X;
-        dOldX = dOldX - MAX_X;
-    }
-    if (px < 0)
-    {
-        px = px + MAX_X;
-        dOldX = dOldX + MAX_X;
-    }
+    // reset net force
+    fx = 0;
+    fy = 0;
 
-    if (py > MAX_Y)
-    {
-        py = py - MAX_Y;
-        dOldY = dOldY - MAX_Y;
-    }
-    if (py < 0)
-    {
-        py = py + MAX_Y;
-        dOldY = dOldY + MAX_Y;
-    }
+    // update position
+    px += vx;
+    py += vy;
+
+    wrapPosition();
+}
+
+void CObject::wrapPosition()
+{
+    if (px < 0) px += MAX_X;
+    if (py < 0) py += MAX_Y;
+
+    if (px > MAX_X) px -= MAX_X;
+    if (py > MAX_Y) py -= MAX_Y;
 }
 
 inline void CObject::Rotate(double angle)

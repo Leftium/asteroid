@@ -170,8 +170,8 @@ int main()
     CObject *Rocks[NUM_ROCKS];
     for (int i = 0; i<NUM_ROCKS; i++)
     {
-        Rocks[i] = new CObject (Rnd(WORLD_W), Rnd(WORLD_H), .1,
-                                5, 100, 1, Rnd(256), Rnd(256));
+        Rocks[i] = new CObject (Rnd(WORLD_W), Rnd(WORLD_H), 0.1,
+                                5, 100, 1, rand() * 2 * M_PI, rand() * 2 * M_PI);
     }
 
     CObject *Explode[MAX_EXPLODE];
@@ -204,12 +204,12 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         {
             if(key[KEY_W])
             {
-                Ship1->Move( .07, Ship1->bearing);
+                Ship1->addForce( 7, Ship1->bearing);
                 fPlayEngine1 = TRUE;
             }
             if(key[KEY_S])
             {
-                Ship1->Move(-.07, Ship1->bearing);
+                Ship1->addForce(-7, Ship1->bearing);
                 fPlayEngine1 = TRUE;
             }
 
@@ -234,8 +234,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                                            3, 4, 0, 25,
                                            Ship1->bearing, Ship1->bearing);
 
-                            Shot1[i]->Move();
-                            Shot1[i]->Move(Ship1->speed, Ship1->heading);
+                            Shot1[i]->applyForces();
+                            Shot1[i]->addForce(Ship1->speed * 100, Ship1->heading);
                             ShotDelay1 = 4;
                             play_sample(shoot, 64, PAN(Ship1->GetX()), 1000, 0);
                             break;
@@ -252,13 +252,13 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             // player 2 //
             if(key[KEY_UP])
             {
-                Ship2->Move( .07, Ship2->bearing);
+                Ship2->addForce(7, Ship2->bearing);
                 fPlayEngine2 = TRUE;
             }
 
             if(key[KEY_DOWN])
             {
-                Ship2->Move(-.07, Ship2->bearing);
+                Ship2->addForce(-7, Ship2->bearing);
                 fPlayEngine2 = TRUE;
             }
 
@@ -290,7 +290,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                                                    Ship2->heading,  // heading
                                                    Ship2->heading); // bearing
 
-                            Shot2[i]->Move(3, Ship2->bearing);
+                            Shot2[i]->addForce(300, Ship2->bearing);
 
                             ShotDelay2 = 4;
                             play_sample(shoot, 64, PAN(Ship2->GetX()), 1000, 0);
@@ -355,7 +355,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 /// if (Ship1->speed >  2) Ship1->SetVelocity( 2);
                 /// if (Ship1->speed < -2) Ship1->SetVelocity(-2);
 // action: ship: move
-                Ship1->Move();
+                Ship1->applyForces();
 // action: ship: apply friction
                 /// Ship1->SetVelocity(Ship1->speed * .99);
             }
@@ -384,7 +384,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 // TODO: Move limits to Ship object subclass
                 /// if (Ship2->speed >  2) Ship2->SetVelocity( 2);
                 /// if (Ship2->speed < -2) Ship2->SetVelocity(-2);
-                Ship2->Move();
+                Ship2->applyForces();
                 /// Ship2->SetVelocity(Ship2->speed * .99);
             }
         }
@@ -404,7 +404,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 else
                 {
 // action: projectile: move
-                    Shot1[i]->Move();
+                    Shot1[i]->applyForces();
                     Shot1[i]->Rotate(6 * FIX_PER_RAD);
                 }
             }
@@ -420,7 +420,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 }
                 else
                 {
-                    Shot2[i]->Move();
+                    Shot2[i]->applyForces();
                     Shot2[i]->Rotate(6 * FIX_PER_RAD);
                 }
             }
@@ -451,7 +451,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 {
                     Rocks[i]->Rotate(1 * FIX_PER_RAD);
 // action: rock: move
-                    Rocks[i]->Move();
+                    Rocks[i]->applyForces();
                 }
             }
         }
@@ -469,7 +469,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 }
                 else
                 {
-                    Explode[i]->Move();
+                    Explode[i]->applyForces();
                     Explode[i]->Rotate(10 * FIX_PER_RAD);
                 }
             }
@@ -485,15 +485,15 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 // action: ship: collision
                 Ship1->SetHealth(Ship1->GetHealth()-3);
                 Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
-                Ship1->Move(Ship2->speed,
-                            relativeAngle(Ship2->GetX(), Ship2->GetY(),
-                                    Ship1->GetX(), Ship1->GetY()));
+                Ship1->addForce(Ship2->speed * 100,
+                                relativeAngle(Ship2->GetX(), Ship2->GetY(),
+                                              Ship1->GetX(), Ship1->GetY()));
 
                 Ship2->SetHealth(Ship2->GetHealth()-3);
                 Rnd(2) ? Ship2->Rotate(20 * FIX_PER_RAD) : Ship2->Rotate(-20 * FIX_PER_RAD);
-                Ship2->Move(Ship1->speed,
-                            relativeAngle(Ship1->GetX(), Ship1->GetY(),
-                                       Ship2->GetX(), Ship2->GetY()));
+                Ship2->addForce(Ship1->speed * 100,
+                                relativeAngle(Ship1->GetX(), Ship1->GetY(),
+                                              Ship2->GetX(), Ship2->GetY()));
 
                 play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
             }
@@ -511,9 +511,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     {
                         Ship2->SetHealth(Ship2->GetHealth()-1);
                         Rnd(2) ? Ship2->Rotate(20 * FIX_PER_RAD) : Ship2->Rotate(-20 * FIX_PER_RAD);
-                        Ship2->Move(.06,
-                                    relativeAngle(Shot1[i]->GetX(), Shot1[i]->GetY(),
-                                       Ship2->GetX(), Ship2->GetY()));
+                        Ship2->addForce(6, relativeAngle(Shot1[i]->GetX(), Shot1[i]->GetY(),
+                                                         Ship2->GetX(), Ship2->GetY()));
 
                         play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
 
@@ -537,9 +536,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     {
                         Ship1->SetHealth(Ship1->GetHealth()-1);
                         Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
-                        Ship1->Move(.06,
-                                    relativeAngle(Shot2[i]->GetX(), Shot2[i]->GetY(),
-                                       Ship1->GetX(), Ship1->GetY()));
+                        Ship1->addForce(6, relativeAngle(Shot2[i]->GetX(), Shot2[i]->GetY(),
+                                                         Ship1->GetX(), Ship1->GetY()));
 
                         play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
 
@@ -564,14 +562,14 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     {
                         Ship1->SetHealth(Ship1->GetHealth()-5);
                         Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
-                        Ship1->Move(Rocks[i]->speed * 2,
-                                     relativeAngle(Rocks[i]->GetX(), Rocks[i]->GetY(),
-                                              Ship1->GetX(), Ship1->GetY()));
+                        Ship1->addForce(Rocks[i]->speed * 200,
+                                        relativeAngle(Rocks[i]->GetX(), Rocks[i]->GetY(),
+                                                      Ship1->GetX(), Ship1->GetY()));
 
                         Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
-                        Rocks[i]->Move(Ship1->speed / 2,
-                                    relativeAngle(Ship1->GetX(), Ship1->GetY(),
-                                               Rocks[i]->GetX(), Rocks[i]->GetY()));
+                        Rocks[i]->addForce(Ship1->speed * 100,
+                                           relativeAngle(Ship1->GetX(), Ship1->GetY(),
+                                                         Rocks[i]->GetX(), Rocks[i]->GetY()));
 
                         play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
                     }
@@ -591,14 +589,14 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     {
                         Ship2->SetHealth(Ship2->GetHealth()-5);
                         Rnd(2) ? Ship2->Rotate(20 * FIX_PER_RAD) : Ship2->Rotate(-20 * FIX_PER_RAD);
-                        Ship2->Move(Rocks[i]->speed * 2,
-                                     relativeAngle(Rocks[i]->GetX(), Rocks[i]->GetY(),
-                                              Ship2->GetX(), Ship2->GetY()));
+                        Ship2->addForce(Rocks[i]->speed * 200,
+                                        relativeAngle(Rocks[i]->GetX(), Rocks[i]->GetY(),
+                                                      Ship2->GetX(), Ship2->GetY()));
 
                         Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
-                        Rocks[i]->Move(Ship2->speed / 2,
-                                    relativeAngle(Ship2->GetX(), Ship2->GetY(),
-                                               Rocks[i]->GetX(), Rocks[i]->GetY()));
+                        Rocks[i]->addForce(Ship2->speed * 100,
+                                           relativeAngle(Ship2->GetX(), Ship2->GetY(),
+                                                         Rocks[i]->GetX(), Rocks[i]->GetY()));
 
                         play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
                     }
@@ -622,9 +620,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         {
                             Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
                             Rnd(2) ? Rocks[i]->Rotate(20 * FIX_PER_RAD) : Rocks[i]->Rotate(-20 * FIX_PER_RAD);
-                            Rocks[i]->Move(.07,
-                                        relativeAngle(Shot1[c]->GetX(), Shot1[c]->GetY(),
-                                           Rocks[i]->GetX(), Rocks[i]->GetY()));
+                            Rocks[i]->addForce(7, relativeAngle(Shot1[c]->GetX(), Shot1[c]->GetY(),
+                                                                Rocks[i]->GetX(), Rocks[i]->GetY()));
 
                                play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 
@@ -655,9 +652,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         {
                             Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
                             Rnd(2) ? Rocks[i]->Rotate(20 * FIX_PER_RAD) : Rocks[i]->Rotate(-20 * FIX_PER_RAD);
-                            Rocks[i]->Move(.07,
-                                        relativeAngle(Shot2[c]->GetX(), Shot2[c]->GetY(),
-                                           Rocks[i]->GetX(), Rocks[i]->GetY()));
+                            Rocks[i]->addForce(7, relativeAngle(Shot2[c]->GetX(), Shot2[c]->GetY(),
+                                                                Rocks[i]->GetX(), Rocks[i]->GetY()));
 
                                play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 
