@@ -45,19 +45,17 @@ protected:
     double fx, fy;    // net force on object
     double m;         // mass of object
 
-
     // TODO: replace with velocity vector
-    double    dOldX;        // last X loc of object
-    double    dOldY;        // last Y loc of object
+    double dOldX;     // last X loc of object
+    double dOldY;     // last Y loc of object
 
     double azimuth;
 
-    int        radius;    // Radius of object
-
+    int    radius;    // Radius of object
 
     // TODO: refactor into subclasses?
-    int     nHealth;    // Amount of hits left
-    int        nData;        // all-purpose variable
+    int    nHealth;   // Amount of hits left
+    int    nData;     // all-purpose variable
 
 public:
     static bool isCollision(CObject *p1, CObject *p2);
