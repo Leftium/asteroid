@@ -14,6 +14,8 @@
 #define RAD_PER_FIX (128.0 / M_PI)
 #define FIX_PER_RAD (M_PI / 128.0)
 
+enum objectType { GENERIC, SHIP, SHOT, ROCK, EXPLOSION };
+
 // convert radians (0 == E, O to 2PI)
 // to Allegro fixed point binary angle (0 == N, 0 to 256)
 fixed RAD2FIX(double r) { return itofix((int(256+64 - (r * RAD_PER_FIX))) % 256); }
@@ -40,6 +42,8 @@ double relativeAngle(double x1, double y1, double x2, double y2)
 class CObject
 {
 protected:
+    objectType type;
+
     double px, py;    // position
     double vx, vy;    // velocity
     double fx, fy;    // net force on object
@@ -63,7 +67,7 @@ public:
     void addForce(double magnitude, double angle);
     void applyForces();
 
-    inline CObject(double dInitX, double dInitY, double dInitVelocity,
+    inline CObject(objectType _type, double dInitX, double dInitY, double dInitVelocity,
             double nInitRadius, int nInitHealth, int nData = 0,
             double nInitHeading = 0, double nInitBearing = 0);
 
@@ -110,7 +114,8 @@ bool CObject::isCollision(CObject *p1, CObject *p2)
              ( pow(p1->radius + p2->radius, 2) ) );
 }
 
-CObject::CObject(double dInitX,
+CObject::CObject(objectType _type,
+                 double dInitX,
                  double dInitY,
                  double _speed,
                  double nInitRadius,
@@ -119,18 +124,16 @@ CObject::CObject(double dInitX,
                  double _heading,
                  double _bearing)
 {
-    px = dInitX;
-    py = dInitY;
-    radius = nInitRadius;
+    type    = _type;
+    px      = dInitX;
+    py      = dInitY;
+    radius  = nInitRadius;
     nHealth = nInitHealth;
-    nData = nInitData;
-
-    this->bearing = _bearing;
-
-    vx = cos(_heading) * _speed;
-    vy = sin(_heading) * _speed;
-
-    m = 100;
+    nData   = nInitData;
+    bearing = _bearing;
+    vx      = cos(_heading) * _speed;
+    vy      = sin(_heading) * _speed;
+    m       = 100;
 }
 
 void CObject::addForce(double magnitude, double angle)
@@ -172,7 +175,7 @@ void CObject::wrapPosition()
 
 inline void CObject::Rotate(double angle)
 {
-    this->bearing += angle;
+    bearing += angle;
 }
 
 inline void CObject::Draw(BITMAP *pSprite, BITMAP *pDest)
@@ -200,12 +203,12 @@ inline void CObject::ShowStats(BITMAP *pDest)
         sprintf(szBuf, "     b:% 010.5f", azimuth);
         textout(pDest, font, szBuf, 0, 10*y++, 255);
 
-        sprintf(szBuf, "     H:% 010.5f", this->heading);
+        sprintf(szBuf, "     H:% 010.5f", heading);
         textout(pDest, font, szBuf, 0, 10*y++, 255);
 
         y++;
 
-        sprintf(szBuf, " speed:% 010.5f", this->speed);
+        sprintf(szBuf, " speed:% 010.5f", speed);
         textout(pDest, font, szBuf, 0, 10*y++, 255);
 }
 

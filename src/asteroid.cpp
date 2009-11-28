@@ -146,7 +146,7 @@ int main()
     // create objects ///////////////////////////////////////////////////////
     CObject *Ship1;
     CObject *Shot1[MAX_SHOTS];
-    Ship1 = new CObject(80, 100, 0, 10, 100, 1, 0, (M_PI_2));
+    Ship1 = new CObject(SHIP, 80, 100, 0, 10, 100, 1, 0, (M_PI_2));
     for (int i=0; i<MAX_SHOTS;i++)
     {
         Shot1[i] = NULL;
@@ -158,7 +158,7 @@ int main()
 
     CObject *Ship2;
     CObject *Shot2[MAX_SHOTS];
-    Ship2 = new CObject(240, 100, 0, 10, 100, 1, 0, (M_PI_2));
+    Ship2 = new CObject(SHIP, 240, 100, 0, 10, 100, 1, 0, (M_PI_2));
     for (int i=0; i<MAX_SHOTS;i++)
     {
         Shot2[i] = NULL;
@@ -170,7 +170,7 @@ int main()
     CObject *Rocks[NUM_ROCKS];
     for (int i = 0; i<NUM_ROCKS; i++)
     {
-        Rocks[i] = new CObject (Rnd(WORLD_W), Rnd(WORLD_H), 0.1,
+        Rocks[i] = new CObject (ROCK, Rnd(WORLD_W), Rnd(WORLD_H), 0.1,
                                 5, 100, 1, (rand()/(double)RAND_MAX)*2*M_PI, (rand()/(double)RAND_MAX)*2*M_PI);
     }
 
@@ -230,7 +230,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                     {
                         if (Shot1[i] == NULL)
                         {
-                            Shot1[i] = new CObject(Ship1->GetX(), Ship1->GetY(),
+                            Shot1[i] = new CObject(SHOT, Ship1->GetX(), Ship1->GetY(),
                                            3, 4, 0, 25,
                                            Ship1->bearing, Ship1->bearing);
 
@@ -281,7 +281,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         if (Shot2[i] == NULL)
                         {
 // action: ship: spawn projectile
-                            Shot2[i] = new CObject(Ship2->GetX(),
+                            Shot2[i] = new CObject(SHOT,
+                                                   Ship2->GetX(),
                                                    Ship2->GetY(),
                                                    Ship2->speed,    // speed
                                                    4,               // radius
@@ -339,7 +340,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 {
                     if (Explode[i] == NULL)
                     {
-                        Explode[i] = new CObject(Ship1->GetX(), Ship1->GetY(),
+                        Explode[i] = new CObject(SHOT, Ship1->GetX(), Ship1->GetY(),
                                        Ship1->speed, 0, 0, 30,
                                        Ship1->bearing, Ship1->bearing);
                         break;
@@ -370,7 +371,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 {
                     if (Explode[i] == NULL)
                     {
-                        Explode[i] = new CObject(Ship2->GetX(), Ship2->GetY(),
+                        Explode[i] = new CObject(EXPLOSION, Ship2->GetX(), Ship2->GetY(),
                                        Ship2->speed, 0, 0, 30,
                                        Ship2->bearing, Ship2->bearing);
                         break;
@@ -438,7 +439,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 // action: rock: explosion animation
                         if (Explode[c] == NULL)
                         {
-                            Explode[c] = new CObject(Rocks[i]->GetX(), Rocks[i]->GetY(),
+                            Explode[c] = new CObject(EXPLOSION, Rocks[i]->GetX(), Rocks[i]->GetY(),
                                            Rocks[i]->speed, 0, 0, 30,
                                            Rocks[i]->bearing, Rocks[i]->bearing);
                             break;
