@@ -14,6 +14,8 @@
 #define RAD_PER_FIX (128.0 / M_PI)
 #define FIX_PER_RAD (M_PI / 128.0)
 
+#define Rnd(x)      ((rand() % (x)))
+
 enum objectType { GENERIC, SHIP, SHOT, ROCK, EXPLOSION };
 
 // convert radians (0 == E, O to 2PI)
@@ -56,6 +58,7 @@ protected:
     int    nData;     // all-purpose variable
 
     void wrapPosition();
+    void setEverything(objectType _type, double _px, double _py, double _speed, double _radius, int _health, int _data, double _heading, double _bearing, double mass=100);
 
 public:
     // TODO: move clipping logic outside of object class
@@ -67,9 +70,8 @@ public:
     void addForce(double magnitude, double angle);
     void applyForces();
 
-    inline CObject(objectType _type, double dInitX, double dInitY, double dInitVelocity,
-            double nInitRadius, int nInitHealth, int nData = 0,
-            double nInitHeading = 0, double nInitBearing = 0);
+    // constructors
+    CObject::CObject(objectType _type, CObject *parent);
 
     inline void Rotate(double angle);
 
@@ -114,27 +116,108 @@ bool CObject::isCollision(CObject *p1, CObject *p2)
              ( pow(p1->radius + p2->radius, 2) ) );
 }
 
-CObject::CObject(objectType _type,
-                 double dInitX,
-                 double dInitY,
-                 double _speed,
-                 double nInitRadius,
-                 int nInitHealth,
-                 int nInitData,
-                 double _heading,
-                 double _bearing)
+CObject::CObject(objectType _type, CObject *parent)
+{
+    int randomHeading = (rand()/(double)RAND_MAX)*2*M_PI;
+    int randomBearing = (rand()/(double)RAND_MAX)*2*M_PI;
+
+    switch (_type)
+    {
+        case SHIP:
+            setEverything(
+                    SHIP,
+                    0,
+                    100,
+                    0,         // speed
+                    10,        // radius
+                    100,       // health
+                    1,         // data
+                    0,         // heading
+                    (M_PI_2)); // bearing
+
+            if (parent == NULL)
+            {
+                // this is ship1: no ships created, yet.
+                px = 80;
+            }
+            else
+            {
+                // this is ship2
+                px = 240;
+            }
+            break;
+
+        case SHOT:
+            setEverything(
+                    SHOT,
+                    parent->px,
+                    parent->py,
+                    parent->speed,    // speed
+                    4,                // radius
+                    0,                // health
+                    25,               // data
+                    parent->heading,  // heading
+                    parent->bearing); // bearing
+            addForce(300, parent->bearing);
+            break;
+
+        case ROCK:
+            setEverything(
+                    ROCK,
+                    Rnd(MAX_X),
+                    Rnd(MAX_Y),
+                    0.1,            // speed
+                    5,              // radius
+                    100,            // health
+                    1,              // data
+                    randomHeading,  // heading
+                    randomBearing,  // bearing
+                    200);           // mass
+            break;
+
+        case EXPLOSION:
+            setEverything(
+                    EXPLOSION,
+                    parent->px,
+                    parent->py,
+                    parent->speed,   // speed
+                    0,               // radius
+                    0,               // health
+                    30,              // data
+                    parent->heading, // heading
+                    randomBearing);  // bearing
+            break;
+
+        case GENERIC:
+        default:
+            break;
+    }
+}
+
+void CObject::setEverything(
+        objectType _type,
+        double _px,
+        double _py,
+        double _speed,
+        double _radius,
+        int    _health,
+        int    _data,
+        double _heading,
+        double _bearing,
+        double _mass)
 {
     type    = _type;
-    px      = dInitX;
-    py      = dInitY;
-    radius  = nInitRadius;
-    nHealth = nInitHealth;
-    nData   = nInitData;
-    bearing = _bearing;
+    px      = _px;
+    py      = _py;
+    radius  = _radius;
+    nHealth = _health;
+    nData   = _data;
     vx      = cos(_heading) * _speed;
     vy      = sin(_heading) * _speed;
-    m       = 100;
+    bearing = _bearing;
+    m       = _mass;
 }
+
 
 void CObject::addForce(double magnitude, double angle)
 {
