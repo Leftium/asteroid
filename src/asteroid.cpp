@@ -9,7 +9,7 @@
 
 
 // #DEFINES /////////////////////////////////////////////////////////////////
-#define NUM_ROCKS   10
+#define NUM_ROCKS   1
 #define MAX_SHOTS   10
 #define MAX_EXPLODE 10
 
@@ -136,7 +136,6 @@ int main()
     int Ship1Color = makecol(97, 207, 207);
     int Ship2Color = makecol(97, 255, 190);
     int StarColor[8];
-    int WhiteColor = makecol(255, 255, 255);
     for (int i=0; i<8; i++)
     {
         StarColor[i] = makecol(255*i/7, 255*i/7, 255*i/7);
@@ -461,18 +460,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             if (CObject::isCollision(Ship1, Ship2))
             {
 // action: ship: collision
-                Ship1->SetHealth(Ship1->GetHealth()-3);
-                Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
-                Ship1->addForce(Ship2->speed * 100,
-                                relativeAngle(Ship2->GetX(), Ship2->GetY(),
-                                              Ship1->GetX(), Ship1->GetY()));
-
-                Ship2->SetHealth(Ship2->GetHealth()-3);
-                Rnd(2) ? Ship2->Rotate(20 * FIX_PER_RAD) : Ship2->Rotate(-20 * FIX_PER_RAD);
-                Ship2->addForce(Ship1->speed * 100,
-                                relativeAngle(Ship1->GetX(), Ship1->GetY(),
-                                              Ship2->GetX(), Ship2->GetY()));
-
+                Ship1->bumpInto(Ship2);
                 play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
             }
         }
@@ -487,15 +475,9 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 {
                     if (CObject::isCollision(Shot1[i], Ship2))
                     {
-                        Ship2->SetHealth(Ship2->GetHealth()-1);
-                        Rnd(2) ? Ship2->Rotate(20 * FIX_PER_RAD) : Ship2->Rotate(-20 * FIX_PER_RAD);
-                        Ship2->addForce(6, relativeAngle(Shot1[i]->GetX(), Shot1[i]->GetY(),
-                                                         Ship2->GetX(), Ship2->GetY()));
-
+                        Ship2->bumpInto(Shot1[i], buf);
                         play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
 
-                        circlefill(buf, (int)Shot1[i]->GetX(), WORLD_H - (int)Shot1[i]->GetY(),
-                                5, WhiteColor);
                         delete Shot1[i];
                         Shot1[i] = NULL;
                     }
@@ -512,15 +494,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 {
                     if (CObject::isCollision(Shot2[i], Ship1))
                     {
-                        Ship1->SetHealth(Ship1->GetHealth()-1);
-                        Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
-                        Ship1->addForce(6, relativeAngle(Shot2[i]->GetX(), Shot2[i]->GetY(),
-                                                         Ship1->GetX(), Ship1->GetY()));
-
+                        Ship1->bumpInto(Shot2[i], buf);
                         play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
-
-                        circlefill(buf, (int)Shot2[i]->GetX(), WORLD_H - (int)Shot2[i]->GetY(),
-                                5, WhiteColor);
 
                         delete Shot2[i];
                         Shot2[i] = NULL;
@@ -538,17 +513,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 {
                     if (CObject::isCollision(Rocks[i], Ship1))
                     {
-                        Ship1->SetHealth(Ship1->GetHealth()-5);
-                        Rnd(2) ? Ship1->Rotate(20 * FIX_PER_RAD) : Ship1->Rotate(-20 * FIX_PER_RAD);
-                        Ship1->addForce(Rocks[i]->speed * 200,
-                                        relativeAngle(Rocks[i]->GetX(), Rocks[i]->GetY(),
-                                                      Ship1->GetX(), Ship1->GetY()));
-
-                        Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
-                        Rocks[i]->addForce(Ship1->speed * 100,
-                                           relativeAngle(Ship1->GetX(), Ship1->GetY(),
-                                                         Rocks[i]->GetX(), Rocks[i]->GetY()));
-
+                        Ship1->bumpInto(Rocks[i]);
                         play_sample(boom, 128, PAN(Ship1->GetX()), 1000, 0);
                     }
 
@@ -565,17 +530,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                 {
                     if (CObject::isCollision(Rocks[i], Ship2))
                     {
-                        Ship2->SetHealth(Ship2->GetHealth()-5);
-                        Rnd(2) ? Ship2->Rotate(20 * FIX_PER_RAD) : Ship2->Rotate(-20 * FIX_PER_RAD);
-                        Ship2->addForce(Rocks[i]->speed * 200,
-                                        relativeAngle(Rocks[i]->GetX(), Rocks[i]->GetY(),
-                                                      Ship2->GetX(), Ship2->GetY()));
-
-                        Rocks[i]->SetHealth(Rocks[i]->GetHealth()-10);
-                        Rocks[i]->addForce(Ship2->speed * 100,
-                                           relativeAngle(Ship2->GetX(), Ship2->GetY(),
-                                                         Rocks[i]->GetX(), Rocks[i]->GetY()));
-
+                        Ship2->bumpInto(Rocks[i]);
                         play_sample(boom, 128, PAN(Ship2->GetX()), 1000, 0);
                     }
 
@@ -596,15 +551,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
                         if (CObject::isCollision(Rocks[i], Shot1[c]))
                         {
-                            Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
-                            Rnd(2) ? Rocks[i]->Rotate(20 * FIX_PER_RAD) : Rocks[i]->Rotate(-20 * FIX_PER_RAD);
-                            Rocks[i]->addForce(7, relativeAngle(Shot1[c]->GetX(), Shot1[c]->GetY(),
-                                                                Rocks[i]->GetX(), Rocks[i]->GetY()));
-
-                               play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
-
-                               circlefill(buf, (int)Shot1[c]->GetX(), WORLD_H - (int)Shot1[c]->GetY(),
-                                5, WhiteColor);
+                            Rocks[i]->bumpInto(Shot1[c], buf);
+                            play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 
                             delete Shot1[c];
                             Shot1[c] = NULL;
@@ -628,15 +576,9 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
                         if (CObject::isCollision(Rocks[i], Shot2[c]))
                         {
-                            Rocks[i]->SetHealth(Rocks[i]->GetHealth()-2);
-                            Rnd(2) ? Rocks[i]->Rotate(20 * FIX_PER_RAD) : Rocks[i]->Rotate(-20 * FIX_PER_RAD);
-                            Rocks[i]->addForce(7, relativeAngle(Shot2[c]->GetX(), Shot2[c]->GetY(),
-                                                                Rocks[i]->GetX(), Rocks[i]->GetY()));
+                            Rocks[i]->bumpInto(Shot2[c], buf);
+                            play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
 
-                               play_sample(boom, 128, PAN(Rocks[i]->GetX()), 1000, 0);
-
-                               circlefill(buf, (int)Shot2[c]->GetX(), WORLD_H - (int)Shot2[c]->GetY(),
-                                5, WhiteColor);
                             delete Shot2[c];
                             Shot2[c] = NULL;
                         }
@@ -758,10 +700,30 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             }
         }
 
+
         if (Ship2 != NULL)
         {
             Ship2->ShowStats(screen);
         }
+
+        if (Ship1 != NULL && Ship2 != NULL)
+        {
+
+            double theTime = CObject::timeToCollision(Ship1, Ship2);
+            int c;
+
+            if (theTime > 0)
+            {
+                c = makecol(255,255,255);
+            }
+            else
+            {
+                c = makecol(255,0,0);
+            }
+            circle(buf, Ship2->GetX(), WORLD_H-Ship2->GetY(), Ship2->speed * abs(theTime), c);
+        }
+
+
 
         vsync();
         stretch_blit(buf, screen, 0, 0, WORLD_W, WORLD_H, 0, 0, SCREEN_W, SCREEN_H);

@@ -54,11 +54,12 @@ protected:
     double radius;    // Radius of object
 
     // TODO: refactor into subclasses?
-    int    nHealth;   // Amount of hits left
+    int    health;   // Amount of hits left
     int    nData;     // all-purpose variable
 
     void wrapPosition();
     void setEverything(objectType _type, double _px, double _py, double _speed, double _radius, int _health, int _data, double _heading, double _bearing, double mass=100);
+    void elasticCollide(double &v1, double m1, double &v2, double m2);
 
 public:
     // TODO: move clipping logic outside of object class
@@ -66,9 +67,11 @@ public:
     static const int MAX_Y = 240;
 
     static bool isCollision(CObject *p1, CObject *p2);
+    static double timeToCollision(CObject *p, CObject *q);
 
     void addForce(double magnitude, double angle);
     void applyForces();
+    void bumpInto(CObject *o, BITMAP *buf=NULL);
 
     // constructors
     CObject::CObject(objectType _type, CObject *parent);
@@ -102,8 +105,8 @@ public:
         }
     }
 
-    int        GetHealth() { return nHealth; };
-    void    SetHealth(int nNewHealth ) { nHealth = nNewHealth; };
+    int        GetHealth() { return health; };
+    void    SetHealth(int nNewHealth ) { health = nNewHealth; };
 
     int        GetData() { return nData; };
     void    SetData(int nNewData) { nData= nNewData; };
@@ -116,10 +119,76 @@ bool CObject::isCollision(CObject *p1, CObject *p2)
              ( pow(p1->radius + p2->radius, 2) ) );
 }
 
+double CObject::timeToCollision(CObject *p, CObject *q)
+{
+    const unsigned long nan[2]={0xffffffff, 0x7fffffff};
+    const double NaN = *( double* )nan;
+
+    double h, j, k, l, d, a, b, c, discriminantSquared, t1, t2;
+
+    h = q->px - p->px;
+    j = q->vx - p->vx;
+    k = q->py - p->py;
+    l = q->vy - p->vy;
+    d = q->radius + p->radius;
+
+    a = j*j + l*l;
+    b = 2 * (h*j + k*l);
+    c = h*h + k*k - d*d;
+
+    discriminantSquared = b*b - 4*a*c;
+
+    if (discriminantSquared < 0)
+    {
+        // no collision
+        return 0;
+    }
+    else
+    {
+        t1 =  (-b + sqrt(discriminantSquared)) / (2*a);
+        t2 =  (-b - sqrt(discriminantSquared)) / (2*a);
+
+        if (isCollision(p, q))
+        {
+           // collision in past: return negative time
+           if ((t1 < 0))
+            {
+                return t1;
+            }
+            else if ((t2 < 0))
+            {
+                return t2;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        else
+        {
+            if ((t1 >= 0) && (t1 < t2))
+            {
+                return t1;
+            }
+            else if ((t2 >= 0) && (t2 < t1))
+            {
+                return t2;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+}
+
 CObject::CObject(objectType _type, CObject *parent)
 {
-    int randomHeading = (rand()/(double)RAND_MAX)*2*M_PI;
-    int randomBearing = (rand()/(double)RAND_MAX)*2*M_PI;
+    double randomHeading = (rand()/(double)RAND_MAX)*2*M_PI;
+    double randomBearing = (rand()/(double)RAND_MAX)*2*M_PI;
+
+    fx = 0;
+    fy = 0;
 
     switch (_type)
     {
@@ -139,11 +208,13 @@ CObject::CObject(objectType _type, CObject *parent)
             {
                 // this is ship1: no ships created, yet.
                 px = 80;
+                bearing = 0;
             }
             else
             {
                 // this is ship2
                 px = 240;
+                bearing = M_PI;
             }
             break;
 
@@ -157,8 +228,9 @@ CObject::CObject(objectType _type, CObject *parent)
                     0,                // health
                     25,               // data
                     parent->heading,  // heading
-                    parent->bearing); // bearing
-            addForce(300, parent->bearing);
+                    parent->bearing,  // bearing
+                    10);              // mass
+            addForce(30, parent->bearing);
             break;
 
         case ROCK:
@@ -210,7 +282,7 @@ void CObject::setEverything(
     px      = _px;
     py      = _py;
     radius  = _radius;
-    nHealth = _health;
+    health = _health;
     nData   = _data;
     vx      = cos(_heading) * _speed;
     vy      = sin(_heading) * _speed;
@@ -261,10 +333,128 @@ inline void CObject::Rotate(double angle)
     bearing += angle;
 }
 
+// Compute final velocities after elastic collision
+// Results returned via reference variables holding initial velocities
+// Based on: http://farside.ph.utexas.edu/teaching/301/lectures/node76.html
+void CObject::elasticCollide(double &v1, double m1, double &v2, double m2)
+{
+   double v1f;
+
+   v1f = ((m1 - m2) / (m1 + m2) * v1) + ((2 * m2) / (m1 + m2)  * v2);
+   v2  = ((2 * m1) / (m1 + m2)  * v1) + ((m1 - m2) / (m1 + m2) * v2);
+
+   v1 = v1f;
+}
+
+void CObject::bumpInto(CObject *o, BITMAP *buf)
+{
+    // final velocity of this object
+    double vxtf = vx;
+    double vytf = vy;
+
+    // final velocity of object o
+    double vxof = o->vx;
+    double vyof = o->vy;
+
+    elasticCollide(vxtf, this->m, vxof, o->m);
+    elasticCollide(vytf, this->m, vyof, o->m);
+
+    double timeOfCollision = timeToCollision(this, o);
+
+    // position at point of collision
+    px += timeOfCollision * vx;
+    py += timeOfCollision * vy;
+    o->px += timeOfCollision  * (o->vx);
+    o->py += timeOfCollision  * (o->vy);
+
+    vx = vxtf;
+    vy = vytf;
+
+    o->vx = vxof;
+    o->vy = vyof;
+
+    // move ships ships after collision
+    px += -timeOfCollision * vx;
+    py += -timeOfCollision * vy;
+    wrapPosition();
+
+    o->px += -timeOfCollision  * (o->vx);
+    o->py += -timeOfCollision  * (o->vy);
+    o->wrapPosition();
+
+    switch(type)
+    {
+        case SHIP:
+            switch(o->type)
+            {
+                case SHIP:
+                    health -= 3;
+                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
+
+                    o->health -= 3;
+                    Rnd(2) ? o->Rotate(20 * FIX_PER_RAD) : o->Rotate(-20 * FIX_PER_RAD);
+                    break;
+
+                case SHOT:
+                    health--;
+                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
+
+                    // render flash
+                    circlefill(buf, o->px, MAX_Y - o->py, 5, makecol(255, 255, 255));
+                    break;
+                case ROCK:
+                    health -= 5;
+                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
+
+                    o->health -= 10;
+                    Rnd(2) ? o->Rotate(20 * FIX_PER_RAD) : o->Rotate(-20 * FIX_PER_RAD);
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+        case SHOT:
+            break;
+        case ROCK:
+            switch(o->type)
+            {
+                case SHOT:
+                    health -= 2;
+                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
+
+                    // render flash
+                    circlefill(buf, o->px, MAX_Y - o->py, 5, makecol(255, 255, 255));
+                    break;
+
+                case ROCK:
+                    health -= 5;
+                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
+
+                    o->health -= 10;
+                    Rnd(2) ? o->Rotate(20 * FIX_PER_RAD) : o->Rotate(-20 * FIX_PER_RAD);
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+        case EXPLOSION:
+            // don't do anything
+            break;
+        case GENERIC:
+        default:
+            break;
+    }
+}
+
 inline void CObject::Draw(BITMAP *pSprite, BITMAP *pDest)
 {
     rotate_sprite(pDest, pSprite, (int)px-(pSprite->w>>1),
                   MAX_Y-((int)py+(pSprite->h>>1)), RAD2FIX( azimuth ));
+    circle(pDest, px, MAX_Y - py, radius, makecol(255, 255, 255));
+
+    line(pDest, px, MAX_Y-py, px+vx*10, MAX_Y-(py+vy*10), makecol(0, 0, 255));
 
     // rect(pDest, px-1, MAX_Y-py-1, px+1, MAX_Y-py+1, makecol(255, 255, 255));
 }
