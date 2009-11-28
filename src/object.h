@@ -139,7 +139,7 @@ void CObject::addForce(double magnitude, double angle)
     fy = sin(angle) * magnitude;
 }
 
-// apply netforce and convert to delta velocity
+// apply net force and convert to delta velocity
 void CObject::applyForces()
 {
     // add velocity from impulse

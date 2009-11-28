@@ -146,7 +146,7 @@ int main()
     // create objects ///////////////////////////////////////////////////////
     CObject *Ship1;
     CObject *Shot1[MAX_SHOTS];
-    Ship1 = new CObject(80, 100, 0, 10, 100, 1, 0, (M_PI/2));
+    Ship1 = new CObject(80, 100, 0, 10, 100, 1, 0, (M_PI_2));
     for (int i=0; i<MAX_SHOTS;i++)
     {
         Shot1[i] = NULL;
@@ -158,7 +158,7 @@ int main()
 
     CObject *Ship2;
     CObject *Shot2[MAX_SHOTS];
-    Ship2 = new CObject(240, 100, 0, 10, 100, 1, 0, (M_PI/2));
+    Ship2 = new CObject(240, 100, 0, 10, 100, 1, 0, (M_PI_2));
     for (int i=0; i<MAX_SHOTS;i++)
     {
         Shot2[i] = NULL;
