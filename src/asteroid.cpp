@@ -2,14 +2,13 @@
 
 // #INCLUDES ////////////////////////////////////////////////////////////////
 #include <allegro.h>
-// #include <random.h> // not available in MSVC
 #include <stdlib.h>    // for rand()
 #include "asteroid.h"
 #include "object.h"
 
 
 // #DEFINES /////////////////////////////////////////////////////////////////
-#define NUM_ROCKS   1
+#define NUM_ROCKS   10
 #define MAX_SHOTS   10
 #define MAX_EXPLODE 10
 
@@ -230,6 +229,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
                         {
                             Shot1[i] = new CObject(SHOT, Ship1);
                             ShotDelay1 = 4;
+                            // TODO: remove GetX() dependency by spawning sound effect object instead
                             play_sample(shoot, 64, PAN(Ship1->GetX()), 1000, 0);
                             break;
                         }
