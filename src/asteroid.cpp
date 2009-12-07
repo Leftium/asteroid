@@ -16,6 +16,8 @@
 
 #define PAN(x)      (int((x) * 256) / WORLD_W)
 
+const bool DEBUG = true;
+
 // TODO: refactor global variables
 std::list<CObject*> objects;
 BITMAP *ship1, *ship2, *rock, *ammo1, *ammo2, *buf, *explode, *bar1, *bar2;
@@ -24,6 +26,55 @@ int gfx_card = GFX_AUTODETECT_WINDOWED;
 int gfx_w = 640;
 int gfx_h = 480;
 int gfx_bpp = 8;
+
+void render(CObject* o)
+{
+    BITMAP* bmp = NULL;
+
+    switch (o->type)
+    {
+        case SHIP:
+            bmp = ((o->team == 1) ? ship1 : ship2);
+            break;
+
+        case SHOT:
+            bmp = ((o->team == 1) ? ammo1 : ammo2);
+            break;
+
+        case ROCK:
+            bmp = rock;
+            break;
+
+        case EXPLOSION:
+            bmp = explode;
+            break;
+
+        default:
+            break;
+    }
+
+    if (bmp != NULL)
+    {
+    rotate_sprite(buf, bmp, o->px - (bmp->w >> 1),
+                          -(o->py + (bmp->h >> 1)) + WORLD_H, RAD2FIX( o->azimuth ));
+    }
+
+    if (DEBUG)
+    {
+        // collision hull
+        circle(buf, o->px, WORLD_H - o->py, o->radius, makecol(255, 255, 255));
+
+        // velocity indicator
+        line(buf, o->px, WORLD_H - o->py, o->px + o->vx * 10, WORLD_H - (o->py + o->vy * 10), makecol(0, 0, 255));
+
+        // bearing indicator
+        circle(buf, o->px + cos(o->azimuth) * (o->radius-1),
+                  -(o->py + sin(o->azimuth) * (o->radius-1)) + WORLD_H, 1, makecol(255, 0, 0));
+
+        // center
+        circle(buf, o->px, WORLD_H - o->py, 1, makecol(255, 255, 255));
+    }
+}
 
 // MAIN /////////////////////////////////////////////////////////////////////
 int main()
@@ -114,7 +165,7 @@ int main()
     // load MIDI ////////////////////////////////////////////////////////////
     MIDI *midi;
     midi = (MIDI *)data[__music].dat;
-    play_midi(midi, 1);
+    // play_midi(midi, 1);
 
     // load SFX /////////////////////////////////////////////////////////////
     SAMPLE *boom, *engine, *shoot;
@@ -389,7 +440,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             CObject *o = *iter_i;
             if(o->GetData())
             {
-                o->Draw(buf);
+                render(o);
             }
             iter_i++;
         }

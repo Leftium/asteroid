@@ -71,7 +71,6 @@ protected:
     // TODO: refactor into subclasses?
     int    health;   // Amount of hits left
     int    nData;     // all-purpose variable
-    BITMAP *bitmap;
     int    team;
 
     void wrapPosition();
@@ -91,16 +90,12 @@ public:
     bool update();
     void addForce(double magnitude, double angle);
     void applyForces();
-    void bumpInto(CObject *o, BITMAP *buf=NULL);
     void bumpedInto(CObject *o);
 
     // constructors
     CObject::CObject(ObjectType _type, CObject *parent);
 
     inline void Rotate(double angle);
-
-    // TODO: Move rendering outside object class?
-    inline void Draw(BITMAP *pTarget, BITMAP *pSprite=NULL);
 
     // TODO: Move debugging outside of object class?
     inline void ShowStats(BITMAP *pDest);
@@ -127,10 +122,12 @@ public:
 
     int        GetHealth() { return health; };
     int        GetData() { return nData; };
+
+    friend void render(CObject* o);
 };
 
 extern std::list<CObject*> objects;
-extern BITMAP *ship1, *ship2, *rock, *ammo2, *buf, *explode;
+extern BITMAP *buf;
 
 
 CollisionFlags CObject::collidesWith(CObject *o)
@@ -409,7 +406,6 @@ CObject::CObject(ObjectType _type, CObject *parent)
                 health = 50;
                 px = 80;
                 bearing = 0;
-                bitmap = ship1;
                 team = 1;
             }
             else
@@ -417,7 +413,6 @@ CObject::CObject(ObjectType _type, CObject *parent)
                 // this is ship2
                 px = 240;
                 bearing = M_PI;
-                bitmap = ship2;
                 team = 2;
             }
             break;
@@ -435,7 +430,6 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     parent->bearing,  // bearing
                     100);             // mass
             addForce(3*m, parent->bearing);
-            bitmap = ammo2;
             break;
 
         case ROCK:
@@ -450,7 +444,6 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     randomHeading,  // heading
                     randomBearing,  // bearing
                     200);           // mass
-            bitmap = rock;
             break;
 
         case EXPLOSION:
@@ -464,7 +457,6 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     30,              // data
                     parent->heading, // heading
                     randomBearing);  // bearing
-            bitmap = explode;
             break;
 
         case GENERIC:
@@ -611,22 +603,6 @@ void CObject::bumpedInto(CObject *o)
             break;
     }
     return;
-}
-
-inline void CObject::Draw(BITMAP *pDest, BITMAP *pSprite)
-{
-    if (pSprite == NULL)
-    {
-        pSprite = bitmap;
-    }
-
-    rotate_sprite(pDest, pSprite, (int)px-(pSprite->w>>1),
-                  MAX_Y-((int)py+(pSprite->h>>1)), RAD2FIX( azimuth ));
-    // circle(pDest, px, MAX_Y - py, radius, makecol(255, 255, 255));
-
-    // line(pDest, px, MAX_Y-py, px+vx*10, MAX_Y-(py+vy*10), makecol(0, 0, 255));
-
-    // rect(pDest, px-1, MAX_Y-py-1, px+1, MAX_Y-py+1, makecol(255, 255, 255));
 }
 
 inline void CObject::ShowStats(BITMAP *pDest)
