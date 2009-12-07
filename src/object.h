@@ -11,6 +11,8 @@
 #include <math.h>
 #include <float.h>
 
+#include <list>
+
 #define RAD_PER_FIX (128.0 / M_PI)
 #define FIX_PER_RAD (M_PI / 128.0)
 
@@ -69,6 +71,8 @@ protected:
     // TODO: refactor into subclasses?
     int    health;   // Amount of hits left
     int    nData;     // all-purpose variable
+    BITMAP *bitmap;
+    int    team;
 
     void wrapPosition();
     void setEverything(ObjectType _type, double _px, double _py, double _speed, double _radius, int _health, int _data, double _heading, double _bearing, double mass=100);
@@ -80,15 +84,15 @@ public:
     static const int MAX_Y = 240;
 
     static bool isCollision(CObject *p1, CObject *p2);
-    static double timeToCollision(CObject *p, CObject *q);
     static bool CObject::handleCollision(CObject *p, CObject *q);
 
     CollisionFlags collidesWith(CObject *o);
 
+    bool update();
     void addForce(double magnitude, double angle);
     void applyForces();
     void bumpInto(CObject *o, BITMAP *buf=NULL);
-    void bumpedInto(CObject *o, BITMAP *buf=NULL);
+    void bumpedInto(CObject *o);
 
     // constructors
     CObject::CObject(ObjectType _type, CObject *parent);
@@ -96,7 +100,7 @@ public:
     inline void Rotate(double angle);
 
     // TODO: Move rendering outside object class?
-    inline void Draw(BITMAP *pSprite, BITMAP *pTarget);
+    inline void Draw(BITMAP *pTarget, BITMAP *pSprite=NULL);
 
     // TODO: Move debugging outside of object class?
     inline void ShowStats(BITMAP *pDest);
@@ -129,10 +133,105 @@ public:
     void    SetData(int nNewData) { nData= nNewData; };
 };
 
+extern std::list<CObject*> objects;
+extern BITMAP *ship1, *ship2, *rock, *ammo2, *buf, *explode;
+
 
 CollisionFlags CObject::collidesWith(CObject *o)
 {
-    return ALL;
+    if (type == ROCK && o->type == ROCK)
+    {
+        return ALL;
+    }
+    else if (type == EXPLOSION || o->type == EXPLOSION)
+    {
+        return NONE;
+    }
+    else if ((type == SHIP && nData == 0) || (o->type == SHIP && o->nData == 0))
+    {
+        return NONE;
+    }
+    else if (team != o->team)
+    {
+        return ALL;
+    }
+    else
+    {
+        return NONE;
+    }
+}
+
+bool CObject::update()
+{
+    switch(type)
+    {
+        case SHIP:
+            if (health > 0)
+            {
+                // TODO: Move limits to Ship object subclass
+                /// if (Ship2->speed >  2) Ship2->SetVelocity( 2);
+                /// if (Ship2->speed < -2) Ship2->SetVelocity(-2);
+                applyForces();
+                /// Ship2->SetVelocity(Ship2->speed * .99);
+            }
+            else if (GetData())
+            {
+                objects.push_front(new CObject(EXPLOSION, this));
+                SetData(0);
+            }
+            return false;
+            break;
+
+        case SHOT:
+            nData--;
+            if (GetData() > 0)
+            {
+                // action: projectile: move
+                applyForces();
+                Rotate(6 * FIX_PER_RAD);
+            }
+            else
+            {
+                return true;
+            }
+            return false;
+            break;
+
+        case EXPLOSION:
+            SetData(GetData()-1);
+            if (GetData() > 0)
+            {
+                applyForces();
+                Rotate(10 * FIX_PER_RAD);
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+            break;
+
+        case ROCK:
+            if (GetHealth() > 0)
+            {
+                Rotate(1 * FIX_PER_RAD);
+                // action: rock: move
+                applyForces();
+                return false;
+            }
+            else
+            {
+                // action: rock: explosion animation
+                objects.push_front(new CObject(EXPLOSION, this));
+
+                return true;
+            }
+            break;
+
+        default:
+            return false;
+            break;
+    }
 }
 
 // ISCOLLISION //////////////////////////////////////////////////////////////////
@@ -162,7 +261,7 @@ bool CObject::handleCollision(CObject *p, CObject *q)
         l = q->vy - p->vy;  // relative y velocity
         d = q->radius + p->radius;
 
-        a = j*j + l*l;
+        a = j*j + l*l + DBL_MIN;
         b = 2 * (h*j + k*l);
         c = h*h + k*k - d*d;
 
@@ -178,7 +277,7 @@ bool CObject::handleCollision(CObject *p, CObject *q)
             double discriminant = sqrt(discriminantSquared);
             double t1 = (-b + discriminant) / (2*a);
             double t2 = (-b - discriminant) / (2*a);
-            double t  = 0;
+            double t  = -999;
 
             if (isCollision(p, q))
             {
@@ -191,10 +290,6 @@ bool CObject::handleCollision(CObject *p, CObject *q)
                 {
                     t = t2;
                 }
-                else
-                {
-                    t = 0;
-                }
             }
             else
             {
@@ -206,14 +301,9 @@ bool CObject::handleCollision(CObject *p, CObject *q)
                 {
                     t = t2;
                 }
-                else
-                {
-                    t = 0;
-                }
             }
 
-
-            if (t < 1)
+            if (t >= 0 && t < 1)
             {
                 bool doPhysicsP = (p->collidesWith(q) & PHYSICS_SELF) ||
                                   (q->collidesWith(p) & PHYSICS_TARGET);
@@ -286,70 +376,6 @@ bool CObject::handleCollision(CObject *p, CObject *q)
     return true;
 }
 
-double CObject::timeToCollision(CObject *p, CObject *q)
-{
-    const unsigned long nan[2]={0xffffffff, 0x7fffffff};
-    const double NaN = *( double* )nan;
-
-    double h, j, k, l, d, a, b, c, discriminantSquared, discriminant, t1, t2;
-
-    h = q->px - p->px;  // relative x location
-    j = q->vx - p->vx;  // relative x velocity
-    k = q->py - p->py;  // relative y location
-    l = q->vy - p->vy;  // relative y velocity
-    d = q->radius + p->radius;
-
-    a = j*j + l*l;
-    b = 2 * (h*j + k*l);
-    c = h*h + k*k - d*d;
-
-    discriminantSquared = b*b - 4*a*c;
-
-    if (discriminantSquared < 0)
-    {
-        // no collision
-        return NaN;
-    }
-    else
-    {
-        discriminant = sqrt(discriminantSquared);
-        t1 =  (-b + discriminant) / (2*a);
-        t2 =  (-b - discriminant) / (2*a);
-
-        if (isCollision(p, q))
-        {
-            // collision in past: return negative time
-            if ((t1 < 0))
-            {
-                return t1;
-            }
-            else if ((t2 < 0))
-            {
-                return t2;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-        else
-        {
-            if ((t1 >= 0) && (t1 < t2))
-            {
-                return t1;
-            }
-            else if ((t2 >= 0) && (t2 < t1))
-            {
-                return t2;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-    }
-}
-
 CObject::CObject(ObjectType _type, CObject *parent)
 {
     double randomHeading = (rand()/(double)RAND_MAX)*2*M_PI;
@@ -357,6 +383,15 @@ CObject::CObject(ObjectType _type, CObject *parent)
 
     fx = 0;
     fy = 0;
+
+    if (parent != NULL)
+    {
+        team = parent->team;
+    }
+    else
+    {
+        team = 0;
+    }
 
     switch (_type)
     {
@@ -375,14 +410,19 @@ CObject::CObject(ObjectType _type, CObject *parent)
             if (parent == NULL)
             {
                 // this is ship1: no ships created, yet.
+                health = 50;
                 px = 80;
                 bearing = 0;
+                bitmap = ship1;
+                team = 1;
             }
             else
             {
                 // this is ship2
                 px = 240;
                 bearing = M_PI;
+                bitmap = ship2;
+                team = 2;
             }
             break;
 
@@ -397,8 +437,9 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     25,               // data
                     parent->heading,  // heading
                     parent->bearing,  // bearing
-                    10);              // mass
-            addForce(30, parent->bearing);
+                    100);             // mass
+            addForce(3*m, parent->bearing);
+            bitmap = ammo2;
             break;
 
         case ROCK:
@@ -408,11 +449,12 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     Rnd(MAX_Y),
                     0.1,            // speed
                     5,              // radius
-                    100,            // health
+                    10,             // health
                     1,              // data
                     randomHeading,  // heading
                     randomBearing,  // bearing
                     200);           // mass
+            bitmap = rock;
             break;
 
         case EXPLOSION:
@@ -426,6 +468,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     30,              // data
                     parent->heading, // heading
                     randomBearing);  // bearing
+            bitmap = explode;
             break;
 
         case GENERIC:
@@ -514,48 +557,8 @@ void CObject::elasticCollide(double &v1, double m1, double &v2, double m2)
    v1 = v1f;
 }
 
-void CObject::bumpedInto(CObject *o, BITMAP *buf)
+void CObject::bumpedInto(CObject *o)
 {
-    return;
-}
-
-
-void CObject::bumpInto(CObject *o, BITMAP *buf)
-{
-    // final velocity of this object
-    double vxtf = vx;
-    double vytf = vy;
-
-    // final velocity of object o
-    double vxof = o->vx;
-    double vyof = o->vy;
-
-    elasticCollide(vxtf, this->m, vxof, o->m);
-    elasticCollide(vytf, this->m, vyof, o->m);
-
-    double timeOfCollision = timeToCollision(this, o);
-
-    // position at point of collision
-    px += timeOfCollision * vx;
-    py += timeOfCollision * vy;
-    o->px += timeOfCollision  * (o->vx);
-    o->py += timeOfCollision  * (o->vy);
-
-    vx = vxtf;
-    vy = vytf;
-
-    o->vx = vxof;
-    o->vy = vyof;
-
-    // move ships ships after collision
-    px += -timeOfCollision * vx;
-    py += -timeOfCollision * vy;
-    wrapPosition();
-
-    o->px += -timeOfCollision  * (o->vx);
-    o->py += -timeOfCollision  * (o->vy);
-    o->wrapPosition();
-
     switch(type)
     {
         case SHIP:
@@ -564,24 +567,16 @@ void CObject::bumpInto(CObject *o, BITMAP *buf)
                 case SHIP:
                     health -= 3;
                     Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-
-                    o->health -= 3;
-                    Rnd(2) ? o->Rotate(20 * FIX_PER_RAD) : o->Rotate(-20 * FIX_PER_RAD);
                     break;
 
                 case SHOT:
                     health--;
                     Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
 
-                    // render flash
-                    // circlefill(buf, o->px, MAX_Y - o->py, 5, makecol(255, 255, 255));
                     break;
                 case ROCK:
                     health -= 5;
                     Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-
-                    o->health -= 10;
-                    Rnd(2) ? o->Rotate(20 * FIX_PER_RAD) : o->Rotate(-20 * FIX_PER_RAD);
                     break;
 
                 default:
@@ -589,24 +584,23 @@ void CObject::bumpInto(CObject *o, BITMAP *buf)
             }
             break;
         case SHOT:
+            nData = 0;
+            // render flash
+            circlefill(buf, px, MAX_Y - py, 5, makecol(255, 255, 255));
             break;
+
         case ROCK:
             switch(o->type)
             {
                 case SHOT:
                     health -= 2;
                     Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-
-                    // render flash
-                    // circlefill(buf, o->px, MAX_Y - o->py, 5, makecol(255, 255, 255));
                     break;
 
                 case ROCK:
+                case SHIP:
                     health -= 5;
                     Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-
-                    o->health -= 10;
-                    Rnd(2) ? o->Rotate(20 * FIX_PER_RAD) : o->Rotate(-20 * FIX_PER_RAD);
                     break;
 
                 default:
@@ -620,10 +614,16 @@ void CObject::bumpInto(CObject *o, BITMAP *buf)
         default:
             break;
     }
+    return;
 }
 
-inline void CObject::Draw(BITMAP *pSprite, BITMAP *pDest)
+inline void CObject::Draw(BITMAP *pDest, BITMAP *pSprite)
 {
+    if (pSprite == NULL)
+    {
+        pSprite = bitmap;
+    }
+
     rotate_sprite(pDest, pSprite, (int)px-(pSprite->w>>1),
                   MAX_Y-((int)py+(pSprite->h>>1)), RAD2FIX( azimuth ));
     // circle(pDest, px, MAX_Y - py, radius, makecol(255, 255, 255));
