@@ -107,7 +107,6 @@ public:
 
     // TODO: change to properties... or get rid of them
     double     GetX() { return px; };
-    double     GetY() { return py; };
 
     __declspec ( property ( get=getspeed ) ) double speed;
     double getspeed() { return sqrt(squareDistance(0, 0, vx, vy)); }
@@ -127,8 +126,6 @@ public:
     }
 
     int        GetHealth() { return health; };
-    void    SetHealth(int nNewHealth ) { health = nNewHealth; };
-
     int        GetData() { return nData; };
     void    SetData(int nNewData) { nData= nNewData; };
 };
@@ -174,17 +171,17 @@ bool CObject::update()
                 applyForces();
                 /// Ship2->SetVelocity(Ship2->speed * .99);
             }
-            else if (GetData())
+            else if (nData)
             {
                 objects.push_front(new CObject(EXPLOSION, this));
-                SetData(0);
+                nData = 0;
             }
             return false;
             break;
 
         case SHOT:
             nData--;
-            if (GetData() > 0)
+            if (nData > 0)
             {
                 // action: projectile: move
                 applyForces();
@@ -198,8 +195,8 @@ bool CObject::update()
             break;
 
         case EXPLOSION:
-            SetData(GetData()-1);
-            if (GetData() > 0)
+            nData--;
+            if (nData > 0)
             {
                 applyForces();
                 Rotate(10 * FIX_PER_RAD);
@@ -212,7 +209,7 @@ bool CObject::update()
             break;
 
         case ROCK:
-            if (GetHealth() > 0)
+            if (health > 0)
             {
                 Rotate(1 * FIX_PER_RAD);
                 // action: rock: move

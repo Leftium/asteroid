@@ -145,8 +145,6 @@ int main()
 
 
     // create objects ///////////////////////////////////////////////////////
-
-
     CObject *Ship1 = new CObject(SHIP, NULL);
     objects.push_front(Ship1);
 
