@@ -12,3 +12,4 @@
 Debug/*
 Release/*
 Profile/*
+*.TMP
