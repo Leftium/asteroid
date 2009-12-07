@@ -127,7 +127,6 @@ public:
 
     int        GetHealth() { return health; };
     int        GetData() { return nData; };
-    void    SetData(int nNewData) { nData= nNewData; };
 };
 
 extern std::list<CObject*> objects;
