@@ -174,11 +174,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\asteroid.h"
-				>
-			</File>
-			<File
-				RelativePath="..\src\object.h"
+				RelativePath="..\src\util.cpp"
 				>
 			</File>
 		</Filter>
@@ -187,6 +183,18 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\src\asteroid.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\object.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\util.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
