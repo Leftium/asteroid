@@ -197,15 +197,18 @@ int main()
 
 
     // create objects ///////////////////////////////////////////////////////
-    objectPtr Ship1(new CObject(SHIP, NULL));
-    objects.push_front(Ship1);
+    objects.push_front(objectPtr(new CObject(SHIP, NULL)));
+    objectPtrWeak Ship1Weak = objects.front();
 
     int ShotDelay1 = 0;
     int Energy1 = 1000;
     bool fPlayEngine1 = FALSE;
 
-    objectPtr Ship2(new CObject(SHIP, Ship1.get()));
-    objects.push_front(Ship2);
+    objectPtrWeak Ship2Weak;
+    if (objectPtr Ship1 = Ship1Weak.lock()) {
+        objects.push_front(objectPtr(new CObject(SHIP, Ship1.get())));
+        Ship2Weak = objects.front();
+    }
 
     int ShotDelay2 = 0;
     int Energy2 = 1000;
@@ -238,7 +241,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 // action: ship: handle input
 
         // player 1 //
-        if (Ship1->GetData())
+        if (objectPtr Ship1 = Ship1Weak.lock())
         {
             if(key[KEY_W])
             {
@@ -273,7 +276,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             if (Energy1 < 1000) Energy1 += abs(Energy1/100)+2;
         }
 
-        if (Ship2->GetData())
+        if (objectPtr Ship2 = Ship2Weak.lock())
         {
             // player 2 //
             if(key[KEY_UP])
@@ -316,7 +319,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 // action: ship: render engine sound
         if(fPlayEngine1)
         {
-            if (Ship1->GetData())
+            if (objectPtr Ship1 = Ship1Weak.lock())
             {
                 play_sample(engine, 64, PAN(Ship1->GetX()), 1000, 0);
             }
@@ -325,7 +328,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
         else if(fPlayEngine2)
         {
-            if (Ship2->GetData())
+            if (objectPtr Ship2 = Ship2Weak.lock())
             {
                 play_sample(engine, 64, PAN(Ship2->GetX()), 1000, 0);
             }
@@ -410,7 +413,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
       }
 
         // life bars
-        if (Ship1->GetData())
+        if (objectPtr Ship1 = Ship1Weak.lock())
         {
             for (int i=Ship1->GetHealth(); i>0; i--)
             {
@@ -423,7 +426,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             }
         }
 
-        if (Ship2->GetData())
+        if (objectPtr Ship2 = Ship2Weak.lock())
         {
             for (int i=Ship2->GetHealth(); i>0; i--)
             {
@@ -447,7 +450,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             iter_i++;
         }
 
-        if (Ship2->GetData())
+        if (objectPtr Ship2 = Ship2Weak.lock())
         {
             Ship2->ShowStats(screen);
         }

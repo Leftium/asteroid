@@ -21,6 +21,7 @@
 class CObject;
 
 typedef std::tr1::shared_ptr<CObject>  objectPtr;
+typedef std::tr1::weak_ptr<CObject>    objectPtrWeak;
 typedef std::list<objectPtr>::iterator objectIter;
 
 
@@ -147,10 +148,6 @@ CollisionFlags CObject::collidesWith(CObject *o)
     {
         return NONE;
     }
-    else if ((type == SHIP && nData == 0) || (o->type == SHIP && o->nData == 0))
-    {
-        return NONE;
-    }
     else if (team != o->team)
     {
         return ALL;
@@ -174,10 +171,10 @@ bool CObject::update()
                 applyForces();
                 /// Ship2->SetVelocity(Ship2->speed * .99);
             }
-            else if (nData)
+            else
             {
                 objects.push_front(objectPtr(new CObject(EXPLOSION, this) ));
-                nData = 0;
+                return true;
             }
             return false;
             break;
