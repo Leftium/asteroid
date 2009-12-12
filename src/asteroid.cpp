@@ -443,10 +443,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         while(iter_i != objects.end())
         {
             objectPtr o = *iter_i;
-            if(o->GetData())
-            {
-                render(o.get());
-            }
+            render(o.get());
             iter_i++;
         }
 

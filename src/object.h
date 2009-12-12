@@ -78,11 +78,10 @@ protected:
 
     // TODO: refactor into subclasses?
     int    health;   // Amount of hits left
-    int    nData;     // all-purpose variable
     int    team;
 
     void wrapPosition();
-    void setEverything(ObjectType _type, double _px, double _py, double _speed, double _radius, int _health, int _data, double _heading, double _bearing, double mass=100);
+    void setEverything(ObjectType _type, double _px, double _py, double _speed, double _radius, int _health, double _heading, double _bearing, double mass=100);
     static void elasticCollide(double &v1, double m1, double &v2, double m2);
 
 public:
@@ -129,7 +128,6 @@ public:
     }
 
     int        GetHealth() { return health; };
-    int        GetData() { return nData; };
 
     friend void render(CObject* o);
 };
@@ -180,8 +178,8 @@ bool CObject::update()
             break;
 
         case SHOT:
-            nData--;
-            if (nData > 0)
+            health--;
+            if (health > 0)
             {
                 // action: projectile: move
                 applyForces();
@@ -195,8 +193,8 @@ bool CObject::update()
             break;
 
         case EXPLOSION:
-            nData--;
-            if (nData > 0)
+            health--;
+            if (health > 0)
             {
                 applyForces();
                 Rotate(10 * FIX_PER_RAD);
@@ -400,7 +398,6 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     0,         // speed
                     10,        // radius
                     100,       // health
-                    1,         // data
                     0,         // heading
                     (M_PI_2)); // bearing
 
@@ -428,8 +425,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     parent->py,
                     parent->speed,    // speed
                     4,                // radius
-                    0,                // health
-                    25,               // data
+                    25,               // health
                     parent->heading,  // heading
                     parent->bearing,  // bearing
                     100);             // mass
@@ -444,7 +440,6 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     0.1,            // speed
                     5,              // radius
                     10,             // health
-                    1,              // data
                     randomHeading,  // heading
                     randomBearing,  // bearing
                     200);           // mass
@@ -457,8 +452,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     parent->py,
                     parent->speed,   // speed
                     0,               // radius
-                    0,               // health
-                    30,              // data
+                    30,              // health
                     parent->heading, // heading
                     randomBearing);  // bearing
             break;
@@ -476,7 +470,6 @@ void CObject::setEverything(
         double _speed,
         double _radius,
         int    _health,
-        int    _data,
         double _heading,
         double _bearing,
         double _mass)
@@ -486,7 +479,6 @@ void CObject::setEverything(
     py      = _py;
     radius  = _radius;
     health = _health;
-    nData   = _data;
     vx      = cos(_heading) * _speed;
     vy      = sin(_heading) * _speed;
     bearing = _bearing;
@@ -576,7 +568,7 @@ void CObject::bumpedInto(CObject *o)
             }
             break;
         case SHOT:
-            nData = 0;
+            health = 0;
             // render flash
             circlefill(buf, px, MAX_Y - py, 5, makecol(255, 255, 255));
             break;
