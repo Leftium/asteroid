@@ -5,6 +5,7 @@
 #include <stdlib.h>    // for rand()
 #include "asteroid.h"
 #include "object.h"
+#include "kinput.h"
 
 #include <list>
 #include <memory>
@@ -199,6 +200,7 @@ int main()
     // create objects ///////////////////////////////////////////////////////
     objects.push_front(objectPtr(new CObject(SHIP, NULL)));
     objectPtrWeak Ship1Weak = objects.front();
+    objects.push_front(objectPtr(new kinput(objects.front(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H) ));
 
     int ShotDelay1 = 0;
     int Energy1 = 1000;
@@ -208,6 +210,7 @@ int main()
     if (objectPtr Ship1 = Ship1Weak.lock()) {
         objects.push_front(objectPtr(new CObject(SHIP, Ship1.get())));
         Ship2Weak = objects.front();
+        objects.push_front(objectPtr(new kinput(objects.front(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE) ));
     }
 
     int ShotDelay2 = 0;
@@ -236,85 +239,6 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
     {
         // erase buf //
         clear(buf);
-
-        // HANDLE KEYPRESSES ////////////////////////////////////////////////
-// action: ship: handle input
-
-        // player 1 //
-        if (objectPtr Ship1 = Ship1Weak.lock())
-        {
-            if(key[KEY_W])
-            {
-                Ship1->addForce( 7, Ship1->bearing);
-                fPlayEngine1 = TRUE;
-            }
-            if(key[KEY_S])
-            {
-                Ship1->addForce(-7, Ship1->bearing);
-                fPlayEngine1 = TRUE;
-            }
-
-            if(key[KEY_A])    Ship1->Rotate( 3 * FIX_PER_RAD);
-            if(key[KEY_D])    Ship1->Rotate(-3 * FIX_PER_RAD);
-
-            if((key[KEY_R]))
-            {
-                if (Energy1 > -10)
-                {
-                    Energy1 -= 30;
-                }
-
-                if (ShotDelay1 == 0 && Energy1 > 100)
-                {
-                    objects.push_front(objectPtr(new CObject(SHOT, Ship1.get())));
-
-                    ShotDelay1 = 4;
-                    play_sample(shoot, 64, PAN(Ship1->GetX()), 1000, 0);
-                }
-            }
-            if (ShotDelay1 > 0) ShotDelay1--;
-            if (Energy1 < 1000) Energy1 += abs(Energy1/100)+2;
-        }
-
-        if (objectPtr Ship2 = Ship2Weak.lock())
-        {
-            // player 2 //
-            if(key[KEY_UP])
-            {
-                Ship2->addForce(7, Ship2->bearing);
-                fPlayEngine2 = TRUE;
-            }
-
-            if(key[KEY_DOWN])
-            {
-                Ship2->addForce(-7, Ship2->bearing);
-                fPlayEngine2 = TRUE;
-            }
-
-            if(key[KEY_LEFT])    Ship2->Rotate( 3 * FIX_PER_RAD);
-            if(key[KEY_RIGHT])   Ship2->Rotate(-3 * FIX_PER_RAD);
-
-            if(key[KEY_KANJI] || key[KEY_ALTGR] || key[KEY_LCONTROL] || key[KEY_SPACE])
-            {
-
-                if (Energy2 > -10)
-                {
-                    // Commmented out for dev purposes
-                    // Energy2 -= 30;
-                }
-
-                if (ShotDelay2 == 0 && Energy2 > 10)
-                {
-                    objects.push_front(objectPtr(new CObject(SHOT, Ship2.get())));
-                    // action: ship: spawn projectile
-                    ShotDelay2 = 4;
-                    play_sample(shoot, 64, PAN(Ship2->GetX()), 1000, 0);
-                }
-            }
-            if (ShotDelay2 > 0) ShotDelay2--;
-            if (Energy2 < 1000) Energy2 += abs(Energy2/100)+2;
-
-        }
 
 // action: ship: render engine sound
         if(fPlayEngine1)

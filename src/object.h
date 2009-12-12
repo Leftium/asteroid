@@ -63,16 +63,16 @@ public:
     static bool isCollision(CObject *p1, CObject *p2);
     static bool CObject::handleCollision(CObject *p, CObject *q);
 
-    CollisionFlags collidesWith(CObject *o);
+    virtual CollisionFlags collidesWith(CObject *o);
 
     bool checkDependencies();
-    bool update();
+    virtual bool update();
     void addForce(double magnitude, double angle);
     void applyForces();
-    void bumpedInto(CObject *o);
+    virtual void bumpedInto(CObject *o);
 
     // constructors
-    CObject::CObject(ObjectType _type, CObject *parent);
+    CObject::CObject(ObjectType _type=GENERIC, CObject *parent=NULL);
 
     void addDependency(objectPtr obj);
 
