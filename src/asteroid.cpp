@@ -345,9 +345,8 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             objectPtr o = *iter_i;
             if (o->update())
             {
-                objects.erase(iter_i++);
                 o.reset();
-
+                objects.erase(iter_i++);
             }
             else iter_i++;
         }
@@ -439,6 +438,25 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             }
         }
 
+        // remove all dependents of expired objects, as well as their dependents
+        bool removedObject = false;
+        do
+        {
+            removedObject = false;
+            iter_i = objects.begin();
+            while(iter_i != objects.end())
+            {
+                objectPtr o = *iter_i;
+                if (o->checkDependencies())
+                {
+                    o.reset();
+                    objects.erase(iter_i++);
+                    removedObject = true;
+                }
+                else iter_i++;
+            }
+        } while (removedObject == true);
+
         iter_i = objects.begin();
         while(iter_i != objects.end())
         {
@@ -447,14 +465,12 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
             iter_i++;
         }
 
+        vsync();
+        stretch_blit(buf, screen, 0, 0, WORLD_W, WORLD_H, 0, 0, SCREEN_W, SCREEN_H);
         if (objectPtr Ship2 = Ship2Weak.lock())
         {
             Ship2->ShowStats(screen);
         }
-
-        vsync();
-        stretch_blit(buf, screen, 0, 0, WORLD_W, WORLD_H, 0, 0, SCREEN_W, SCREEN_H);
-
     }
 
     allegro_exit();

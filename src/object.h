@@ -20,11 +20,10 @@
 
 class CObject;
 
-typedef std::tr1::shared_ptr<CObject>  objectPtr;
-typedef std::tr1::weak_ptr<CObject>    objectPtrWeak;
-typedef std::list<objectPtr>::iterator objectIter;
-
-
+typedef std::tr1::shared_ptr<CObject>      objectPtr;
+typedef std::tr1::weak_ptr<CObject>        objectPtrWeak;
+typedef std::list<objectPtr>::iterator     objectIter;
+typedef std::list<objectPtrWeak>::iterator objectIterWeak;
 
 // Possible collision detection levels
 enum CollisionFlags
@@ -80,6 +79,8 @@ protected:
     int    health;   // Amount of hits left
     int    team;
 
+    std::list<objectPtrWeak> dependedObjects;
+
     void wrapPosition();
     void setEverything(ObjectType _type, double _px, double _py, double _speed, double _radius, int _health, double _heading, double _bearing, double mass=100);
     static void elasticCollide(double &v1, double m1, double &v2, double m2);
@@ -94,6 +95,7 @@ public:
 
     CollisionFlags collidesWith(CObject *o);
 
+    bool checkDependencies();
     bool update();
     void addForce(double magnitude, double angle);
     void applyForces();
@@ -101,6 +103,8 @@ public:
 
     // constructors
     CObject::CObject(ObjectType _type, CObject *parent);
+
+    void addDependency(objectPtr obj);
 
     inline void Rotate(double angle);
 
@@ -155,6 +159,30 @@ CollisionFlags CObject::collidesWith(CObject *o)
         return NONE;
     }
 }
+
+void CObject::addDependency(objectPtr obj)
+{
+    if (obj)
+    {
+        dependedObjects.push_front(objectPtrWeak(obj));
+    }
+}
+
+bool CObject::checkDependencies()
+{
+    objectIterWeak iter_i = dependedObjects.begin();
+    while(iter_i != dependedObjects.end())
+    {
+        objectPtrWeak o = *iter_i;
+        if (o.expired())
+        {
+            return true;
+        }
+        iter_i++;
+    }
+    return false;
+}
+
 
 bool CObject::update()
 {
