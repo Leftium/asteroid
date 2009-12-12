@@ -18,6 +18,13 @@
 
 #define Rnd(x)      ((rand() % (x)))
 
+class CObject;
+
+typedef std::tr1::shared_ptr<CObject>  objectPtr;
+typedef std::list<objectPtr>::iterator objectIter;
+
+
+
 // Possible collision detection levels
 enum CollisionFlags
 {
@@ -126,7 +133,7 @@ public:
     friend void render(CObject* o);
 };
 
-extern std::list<CObject*> objects;
+extern std::list< objectPtr > objects;
 extern BITMAP *buf;
 
 
@@ -169,7 +176,7 @@ bool CObject::update()
             }
             else if (nData)
             {
-                objects.push_front(new CObject(EXPLOSION, this));
+                objects.push_front(objectPtr(new CObject(EXPLOSION, this) ));
                 nData = 0;
             }
             return false;
@@ -215,7 +222,7 @@ bool CObject::update()
             else
             {
                 // action: rock: explosion animation
-                objects.push_front(new CObject(EXPLOSION, this));
+                objects.push_front(objectPtr(new CObject(EXPLOSION, this)));
 
                 return true;
             }

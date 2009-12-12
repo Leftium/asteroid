@@ -7,6 +7,7 @@
 #include "object.h"
 
 #include <list>
+#include <memory>
 
 // #DEFINES /////////////////////////////////////////////////////////////////
 #define NUM_ROCKS   5
@@ -19,7 +20,7 @@
 const bool DEBUG = true;
 
 // TODO: refactor global variables
-std::list<CObject*> objects;
+std::list< objectPtr > objects;
 BITMAP *ship1, *ship2, *rock, *ammo1, *ammo2, *buf, *explode, *bar1, *bar2;
 
 int gfx_card = GFX_AUTODETECT_WINDOWED;
@@ -196,14 +197,14 @@ int main()
 
 
     // create objects ///////////////////////////////////////////////////////
-    CObject *Ship1 = new CObject(SHIP, NULL);
+    objectPtr Ship1(new CObject(SHIP, NULL));
     objects.push_front(Ship1);
 
     int ShotDelay1 = 0;
     int Energy1 = 1000;
     bool fPlayEngine1 = FALSE;
 
-    CObject *Ship2 = new CObject(SHIP, Ship1);
+    objectPtr Ship2(new CObject(SHIP, Ship1.get()));
     objects.push_front(Ship2);
 
     int ShotDelay2 = 0;
@@ -212,7 +213,7 @@ int main()
 
     for (int i = 0; i<NUM_ROCKS; i++)
     {
-        objects.push_front(new CObject(ROCK, NULL));
+        objects.push_front(objectPtr(new CObject(ROCK, NULL)));
     }
 
 // STAR FIELD STUFF BY SHAWN HARGRAEVES //////////////////////////////////////
@@ -225,7 +226,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
     } star[MAX_STARS];
 
 
-    std::list<CObject*>::iterator iter_i, iter_j;
+    objectIter iter_i, iter_j;
 
     // main loop ////////////////////////////////////////////////////////////
     while(!key[KEY_ESC])
@@ -262,7 +263,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
                 if (ShotDelay1 == 0 && Energy1 > 100)
                 {
-                    objects.push_front(new CObject(SHOT, Ship1));
+                    objects.push_front(objectPtr(new CObject(SHOT, Ship1.get())));
 
                     ShotDelay1 = 4;
                     play_sample(shoot, 64, PAN(Ship1->GetX()), 1000, 0);
@@ -301,7 +302,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
                 if (ShotDelay2 == 0 && Energy2 > 10)
                 {
-                    objects.push_front(new CObject(SHOT, Ship2));
+                    objects.push_front(objectPtr(new CObject(SHOT, Ship2.get())));
                     // action: ship: spawn projectile
                     ShotDelay2 = 4;
                     play_sample(shoot, 64, PAN(Ship2->GetX()), 1000, 0);
@@ -338,11 +339,12 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         iter_i = objects.begin();
         while(iter_i != objects.end())
         {
-            CObject *o = *iter_i;
+            objectPtr o = *iter_i;
             if (o->update())
             {
                 objects.erase(iter_i++);
-                delete o;
+                o.reset();
+
             }
             else iter_i++;
         }
@@ -357,10 +359,10 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
             while (iter_j != objects.end())
             {
-                CObject *p = *iter_i;
-                CObject *q = *iter_j;
+                objectPtr p = *iter_i;
+                objectPtr q = *iter_j;
 
-                CObject::handleCollision(p, q);
+                CObject::handleCollision(p.get(), q.get());
                 iter_j++;
             }
             iter_i++;
@@ -437,10 +439,10 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         iter_i = objects.begin();
         while(iter_i != objects.end())
         {
-            CObject *o = *iter_i;
+            objectPtr o = *iter_i;
             if(o->GetData())
             {
-                render(o);
+                render(o.get());
             }
             iter_i++;
         }
