@@ -182,6 +182,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\ship.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\util.cpp"
 				>
 			</File>
@@ -201,6 +205,10 @@
 			</File>
 			<File
 				RelativePath="..\src\object.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\ship.h"
 				>
 			</File>
 			<File

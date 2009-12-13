@@ -2,9 +2,7 @@
 // CObject header
 
 // this is the base class for all objects in asteroids
-
-#ifndef OBJECT_H
-#define OBJECT_H
+#pragma once
 
 #include <stdio.h>
 #include <list>
@@ -36,7 +34,7 @@ enum ObjectType { GENERIC, SHIP, SHOT, ROCK, EXPLOSION };
 class CObject
 {
 protected:
-    ObjectType type;
+    ObjectType type_;
 
     double px, py;    // position
     double vx, vy;    // velocity
@@ -47,7 +45,7 @@ protected:
 
     // TODO: refactor into subclasses?
     int    health;   // Amount of hits left
-    int    team;
+    int    team_;
 
     std::list<objectPtrWeak> dependedObjects;
 
@@ -101,6 +99,12 @@ public:
         }
     }
 
+    __declspec ( property ( get=getteam ) ) int team;
+    int getteam() { return team_; }
+
+    __declspec ( property ( get=gettype ) ) ObjectType type;
+    ObjectType gettype() { return type_; }
+
     int        GetHealth() { return health; };
 
     friend void render(CObject* o);
@@ -108,5 +112,3 @@ public:
 
 extern std::list< objectPtr > objects;
 extern BITMAP *buf;
-
-#endif

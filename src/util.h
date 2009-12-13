@@ -1,5 +1,4 @@
-#ifndef UTIL_H
-#define UTIL_H
+#pragma once
 
 #include <allegro.h>
 #include <math.h>
@@ -15,5 +14,3 @@ int Rnd(int max);
 fixed RAD2FIX(double r);
 double squareDistance(double x1, double y1, double x2, double y2);
 double relativeAngle(double x1, double y1, double x2, double y2);
-
-#endif

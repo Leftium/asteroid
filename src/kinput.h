@@ -1,12 +1,14 @@
-#ifndef KINPUT_H
-#define KINPUT_H
+#pragma once
 
+#include <memory>
 #include "object.h"
+#include "ship.h"
 
 class kinput: public CObject
 {
 protected:
     char k_forward, k_back, k_left, k_right, k_fire;
+
 public:
     // constructors
     kinput() {};
@@ -15,5 +17,3 @@ public:
     CollisionFlags collidesWith(CObject *o);
     bool update();
 };
-
-#endif

@@ -18,7 +18,7 @@ CollisionFlags kinput::collidesWith(CObject *o)
 
 bool kinput::update()
 {
-    if (objectPtr ship = (dependedObjects.front()).lock())
+    if ( ShipPtr ship = std::tr1::dynamic_pointer_cast<Ship>(dependedObjects.front().lock()) )
     {
         if(key[k_forward])
         {
@@ -45,26 +45,8 @@ bool kinput::update()
 
         if(key[k_fire])
         {
-            // TODO: move this logic to ship object
-            objects.push_front(objectPtr(new CObject(SHOT, ship.get())));
-            /*
-            if (Energy2 > -10)
-            {
-                // Commmented out for dev purposes
-                // Energy2 -= 30;
-            }
-
-            if (ShotDelay2 == 0 && Energy2 > 10)
-            {
-                objects.push_front(objectPtr(new CObject(SHOT, Ship2.get())));
-                // action: ship: spawn projectile
-                ShotDelay2 = 4;
-                play_sample(shoot, 64, PAN(Ship2->GetX()), 1000, 0);
-            }
-            */
+            ship->fire();
         }
-        //  if (ShotDelay2 > 0) ShotDelay2--;
-        // if (Energy2 < 1000) Energy2 += abs(Energy2/100)+2;
         return false;
     }
     return true;

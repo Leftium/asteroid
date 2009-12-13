@@ -48,23 +48,6 @@ bool CObject::update()
 {
     switch(type)
     {
-        case SHIP:
-            if (health > 0)
-            {
-                // TODO: Move limits to Ship object subclass
-                /// if (Ship2->speed >  2) Ship2->SetVelocity( 2);
-                /// if (Ship2->speed < -2) Ship2->SetVelocity(-2);
-                applyForces();
-                /// Ship2->SetVelocity(Ship2->speed * .99);
-            }
-            else
-            {
-                objects.push_front(objectPtr(new CObject(EXPLOSION, this) ));
-                return true;
-            }
-            return false;
-            break;
-
         case SHOT:
             health--;
             if (health > 0)
@@ -269,43 +252,15 @@ CObject::CObject(ObjectType _type, CObject *parent)
 
     if (parent != NULL)
     {
-        team = parent->team;
+        team_ = parent->team;
     }
     else
     {
-        team = 0;
+        team_ = 0;
     }
 
     switch (_type)
     {
-        case SHIP:
-            setEverything(
-                    SHIP,
-                    0,
-                    100,
-                    0,         // speed
-                    10,        // radius
-                    100,       // health
-                    0,         // heading
-                    (M_PI_2)); // bearing
-
-            if (parent == NULL)
-            {
-                // this is ship1: no ships created, yet.
-                health = 50;
-                px = 80;
-                bearing = 0;
-                team = 1;
-            }
-            else
-            {
-                // this is ship2
-                px = 240;
-                bearing = M_PI;
-                team = 2;
-            }
-            break;
-
         case SHOT:
             setEverything(
                     SHOT,
@@ -362,7 +317,7 @@ void CObject::setEverything(
         double _bearing,
         double _mass)
 {
-    type    = _type;
+    type_   = _type;
     px      = _px;
     py      = _py;
     radius  = _radius;
@@ -433,28 +388,6 @@ void CObject::bumpedInto(CObject *o)
 {
     switch(type)
     {
-        case SHIP:
-            switch(o->type)
-            {
-                case SHIP:
-                    health -= 3;
-                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-                    break;
-
-                case SHOT:
-                    health--;
-                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-
-                    break;
-                case ROCK:
-                    health -= 5;
-                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-                    break;
-
-                default:
-                    break;
-            }
-            break;
         case SHOT:
             health = 0;
             // render flash

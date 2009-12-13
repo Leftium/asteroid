@@ -6,6 +6,7 @@
 #include "asteroid.h"
 #include "object.h"
 #include "kinput.h"
+#include "ship.h"
 
 #include <list>
 #include <memory>
@@ -198,23 +199,19 @@ int main()
 
 
     // create objects ///////////////////////////////////////////////////////
-    objects.push_front(objectPtr(new CObject(SHIP, NULL)));
-    objectPtrWeak Ship1Weak = objects.front();
+    objects.push_front(objectPtr(new Ship(80, 100, 1, 0, 75)));
+    ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
     objects.push_front(objectPtr(new kinput(objects.front(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H) ));
 
-    int ShotDelay1 = 0;
-    int Energy1 = 1000;
     bool fPlayEngine1 = FALSE;
 
-    objectPtrWeak Ship2Weak;
+    ShipPtrWeak Ship2Weak;
     if (objectPtr Ship1 = Ship1Weak.lock()) {
-        objects.push_front(objectPtr(new CObject(SHIP, Ship1.get())));
-        Ship2Weak = objects.front();
+        objects.push_front(objectPtr(new Ship(220, 100, 2, M_PI, 75)));
+        Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
         objects.push_front(objectPtr(new kinput(objects.front(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE) ));
     }
 
-    int ShotDelay2 = 0;
-    int Energy2 = 1000;
     bool fPlayEngine2 = FALSE;
 
     for (int i = 0; i<NUM_ROCKS; i++)
@@ -336,29 +333,29 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
       }
 
         // life bars
-        if (objectPtr Ship1 = Ship1Weak.lock())
+        if (ShipPtr Ship1 = Ship1Weak.lock())
         {
             for (int i=Ship1->GetHealth(); i>0; i--)
             {
                 blit(bar1, buf, 0, 0, 10, buf->h-1-i*2, 14, 1);
             }
 
-            if (Energy1 > 0)
+            if (Ship1->energy > 0)
             {
-                rectfill(buf, 25, buf->h-2, 30 , int(buf->h-2 - (double(Energy1)/1000.0) * 50.0), Ship1Color);
+                rectfill(buf, 25, buf->h-2, 30 , int(buf->h-2 - (double(Ship1->energy)/1000.0) * 50.0), Ship1Color);
             }
         }
 
-        if (objectPtr Ship2 = Ship2Weak.lock())
+        if (ShipPtr Ship2 = Ship2Weak.lock())
         {
             for (int i=Ship2->GetHealth(); i>0; i--)
             {
                 blit(bar2, buf, 0, 0, 300, buf->h-1-i*2, 14, 1);
             }
 
-            if (Energy2 > 0)
+            if (Ship2->energy > 0)
             {
-                rectfill(buf, 293, buf->h-2, 298 , int(buf->h-2 - (double(Energy2)/1000.0) * 50.0), Ship2Color);
+                rectfill(buf, 293, buf->h-2, 298 , int(buf->h-2 - (double(Ship2->energy)/1000.0) * 50.0), Ship2Color);
             }
         }
 
