@@ -126,18 +126,26 @@ void render(objectPtr o)
 
     if (DEBUG)
     {
+        const int white = makecol(255, 255, 255);
+        const int red   = makecol(255,   0,   0);
+        const int green = makecol(  0, 255,   0);
+        const int blue  = makecol(  0,   0, 255);
+
         // collision hull
-        circle(buf, o->px, WORLD_H - o->py, o->radius, makecol(255, 255, 255));
+        circle(buf, o->px, WORLD_H - o->py, o->radius, white);
 
         // velocity indicator
-        line(buf, o->px, WORLD_H - o->py, o->px + o->vx * 10, WORLD_H - (o->py + o->vy * 10), makecol(0, 0, 255));
+        line(buf, o->px, WORLD_H - o->py, o->px + o->vx * 10, WORLD_H - (o->py + o->vy * 10), blue);
 
         // bearing indicator
         circle(buf, o->px + cos(o->azimuth) * (o->radius-1),
-                  -(o->py + sin(o->azimuth) * (o->radius-1)) + WORLD_H, 1, makecol(255, 0, 0));
+                  -(o->py + sin(o->azimuth) * (o->radius-1)) + WORLD_H, 1, red);
 
         // center
-        circle(buf, o->px, WORLD_H - o->py, 1, makecol(255, 255, 255));
+        circle(buf, o->px, WORLD_H - o->py, 1, white);
+
+        // object id
+        textprintf_ex(buf, font, (o->px + o->radius), WORLD_H - (o->py - o->radius), white, -1, "%x", o->id);
     }
 }
 

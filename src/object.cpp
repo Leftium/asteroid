@@ -246,10 +246,13 @@ bool CObject::handleCollision(CObject *p, CObject *q)
 
 CObject::CObject(ObjectType _type, CObject *parent)
 {
+    static int currentId    = 0;
     static int nextGenericX = 4;
+
     double randomHeading = (rand()/(double)RAND_MAX)*2*M_PI;
     double randomBearing = (rand()/(double)RAND_MAX)*2*M_PI;
 
+    id = currentId++;
     fx = 0;
     fy = 0;
 
@@ -440,26 +443,18 @@ void CObject::bumpedInto(CObject *o)
 
 void CObject::ShowStats(BITMAP *pDest)
 {
+    const int white = makecol(255, 255, 255);
+    const int red   = makecol(255,   0,   0);
+    const int green = makecol(  0, 255,   0);
+    const int blue  = makecol(  0,   0, 255);
+
     int y = 1;
-    char szBuf[80];
 
-
-    sprintf(szBuf, "     x:% 010.5f", px);
-    textout(pDest, font, szBuf, 0, 10*y++, 255);
-
-    sprintf(szBuf, "     y:% 010.5f", py);
-    textout(pDest, font, szBuf, 0, 10*y++, 255);
-
+    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     x:% 010.5f", px);
+    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     y:% 010.5f", py);
     y++;
-
-    sprintf(szBuf, "     b:% 010.5f", azimuth);
-    textout(pDest, font, szBuf, 0, 10*y++, 255);
-
-    sprintf(szBuf, "     H:% 010.5f", heading);
-    textout(pDest, font, szBuf, 0, 10*y++, 255);
-
+    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     b:% 010.5f", azimuth);
+    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     H:% 010.5f", heading);
     y++;
-
-    sprintf(szBuf, " speed:% 010.5f", speed);
-    textout(pDest, font, szBuf, 0, 10*y++, 255);
+    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, " speed:% 010.5f", speed);
 }

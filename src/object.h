@@ -36,6 +36,7 @@ class CObject
 protected:
     ObjectType type_;
 
+    int    id;        // uniquely identifies object
     double px, py;    // position
     double vx, vy;    // velocity
     double fx, fy;    // net force on object
