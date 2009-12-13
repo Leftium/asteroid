@@ -28,7 +28,7 @@ enum CollisionFlags
     ONLY_TARGET    =                PHYSICS_TARGET |              LOGIC_TARGET
 };
 
-enum ObjectType { GENERIC, SHIP, SHOT, ROCK, EXPLOSION };
+enum ObjectType { GENERIC, SHIP, SHOT, ROCK, EXPLOSION, SOUND };
 
 
 class CObject
@@ -79,9 +79,6 @@ public:
     // TODO: Move debugging outside of object class?
     void ShowStats(BITMAP *pDest);
 
-    // TODO: change to properties... or get rid of them
-    double     GetX() { return px; };
-
     __declspec ( property ( get=getspeed ) ) double speed;
     double getspeed() { return sqrt(squareDistance(0, 0, vx, vy)); }
 
@@ -107,7 +104,7 @@ public:
 
     int        GetHealth() { return health; };
 
-    friend void render(CObject* o);
+    friend void render(objectPtr o);
 };
 
 extern std::list< objectPtr > objects;

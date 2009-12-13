@@ -1,4 +1,5 @@
 #include "ship.h"
+#include "sound.h"
 
 Ship::Ship(double x, double y, int team, double _bearing, int _health)
 {
@@ -22,6 +23,7 @@ Ship::Ship(double x, double y, int team, double _bearing, int _health)
 
     energy_     = 1000;
     reloadTime_ = 0;
+    isEngineOn_ = false;
 }
 
 CollisionFlags Ship::collidesWith(CObject *o)
@@ -92,7 +94,20 @@ void Ship::fire()
     if (reloadTime_ == 0 && energy_ > 10)
     {
         objects.push_front(objectPtr(new CObject(SHOT, this)));
+        objects.push_front(objectPtr(new Sound(SHOOT, px, py)));
         reloadTime_ = 4;
-        // play_sample(shoot, 64, PAN(Ship2->GetX()), 1000, 0);
+    }
+}
+
+void Ship::thrust(int power)
+{
+    if (power != 0)
+    {
+        addForce(power, bearing);
+        isEngineOn_ = true;
+    }
+    else
+    {
+        isEngineOn_ = false;
     }
 }

@@ -20,17 +20,20 @@ bool kinput::update()
 {
     if ( ShipPtr ship = std::tr1::dynamic_pointer_cast<Ship>(dependedObjects.front().lock()) )
     {
+        if (!key[k_forward] && !key[k_back])
+        {
+            // ensure engine sound doesn't play
+            ship->thrust(0);
+        }
+
         if(key[k_forward])
         {
-            ship->addForce(7, ship->bearing);
-            // TODO: move outside kinput object
-            // fPlayEngine2 = TRUE;
+            ship->thrust(7);
         }
 
         if(key[k_back])
         {
-            ship->addForce(-7, ship->bearing);
-            // fPlayEngine2 = TRUE;
+            ship->thrust(-7);
         }
 
         if(key[k_left])

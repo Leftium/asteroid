@@ -7,6 +7,7 @@
 #include "object.h"
 #include "kinput.h"
 #include "ship.h"
+#include "sound.h"
 
 #include <list>
 #include <memory>
@@ -24,20 +25,59 @@ const bool DEBUG = true;
 // TODO: refactor global variables
 std::list< objectPtr > objects;
 BITMAP *ship1, *ship2, *rock, *ammo1, *ammo2, *buf, *explode, *bar1, *bar2;
+SAMPLE *boom, *engine, *shoot;
 
 int gfx_card = GFX_AUTODETECT_WINDOWED;
 int gfx_w = 640;
 int gfx_h = 480;
 int gfx_bpp = 8;
 
-void render(CObject* o)
+void render(objectPtr o)
 {
-    BITMAP* bmp = NULL;
+    static int ship1EngineVoice = -1;
+    static int ship2EngineVoice = -1;
+
+    BITMAP* bmp      = NULL;
+    SAMPLE* sample   = NULL;
+    int *engineVoice = NULL;
+
+    SoundPtr sound;
+    ShipPtr s;
 
     switch (o->type)
     {
         case SHIP:
-            bmp = ((o->team == 1) ? ship1 : ship2);
+            s = std::tr1::dynamic_pointer_cast<Ship>(o);
+            if (o->team == 1)
+            {
+                bmp = ship1;
+                engineVoice = &ship1EngineVoice;
+            }
+            else
+            {
+                bmp = ship2;
+                engineVoice = &ship2EngineVoice;
+            }
+
+            if (s->isEngineOn_)
+            {
+                if (*engineVoice < 0)
+                {
+                    *engineVoice = play_sample(engine, 64, PAN(o->px), 1000, TRUE);
+                }
+                else
+                {
+                    voice_set_pan(*engineVoice, PAN(o->px));
+                    voice_set_volume(*engineVoice, 64);
+                }
+            }
+            else
+            {
+                if (*engineVoice >= 0)
+                {
+                    voice_set_volume(*engineVoice, 0);
+                }
+            }
             break;
 
         case SHOT:
@@ -52,14 +92,36 @@ void render(CObject* o)
             bmp = explode;
             break;
 
+        case SOUND:
+            sound = std::tr1::dynamic_pointer_cast<Sound>(o);
+            switch (sound->soundType)
+            {
+                case  ENGINE:
+                    sample = engine;
+                    break;
+                case SHOOT:
+                    sample = shoot;
+                    break;
+                case BOOM:
+                    sample = boom;
+                    break;
+                default:
+                    break;
+            }
+            break;
+
         default:
             break;
     }
 
     if (bmp != NULL)
     {
-    rotate_sprite(buf, bmp, o->px - (bmp->w >> 1),
-                          -(o->py + (bmp->h >> 1)) + WORLD_H, RAD2FIX( o->azimuth ));
+        rotate_sprite(buf, bmp, o->px - (bmp->w >> 1),
+                              -(o->py + (bmp->h >> 1)) + WORLD_H, RAD2FIX( o->azimuth ));
+    }
+    else if (sample != NULL)
+    {
+        play_sample(sample, 64, PAN(o->px), 1000, 0);
     }
 
     if (DEBUG)
@@ -171,7 +233,6 @@ int main()
     // play_midi(midi, 1);
 
     // load SFX /////////////////////////////////////////////////////////////
-    SAMPLE *boom, *engine, *shoot;
     boom = (SAMPLE *)data[__Boom].dat;
     engine = (SAMPLE *)data[__Engine].dat;
     shoot = (SAMPLE *)data[__Shoot].dat;
@@ -203,16 +264,12 @@ int main()
     ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
     objects.push_front(objectPtr(new kinput(objects.front(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H) ));
 
-    bool fPlayEngine1 = FALSE;
-
     ShipPtrWeak Ship2Weak;
     if (objectPtr Ship1 = Ship1Weak.lock()) {
         objects.push_front(objectPtr(new Ship(220, 100, 2, M_PI, 75)));
         Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
         objects.push_front(objectPtr(new kinput(objects.front(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE) ));
     }
-
-    bool fPlayEngine2 = FALSE;
 
     for (int i = 0; i<NUM_ROCKS; i++)
     {
@@ -236,29 +293,6 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
     {
         // erase buf //
         clear(buf);
-
-// action: ship: render engine sound
-        if(fPlayEngine1)
-        {
-            if (objectPtr Ship1 = Ship1Weak.lock())
-            {
-                play_sample(engine, 64, PAN(Ship1->GetX()), 1000, 0);
-            }
-            fPlayEngine1 = FALSE;
-        }
-
-        else if(fPlayEngine2)
-        {
-            if (objectPtr Ship2 = Ship2Weak.lock())
-            {
-                play_sample(engine, 64, PAN(Ship2->GetX()), 1000, 0);
-            }
-            fPlayEngine2 = FALSE;
-        }
-        else
-        {
-            stop_sample(engine);
-        }
 
         iter_i = objects.begin();
         while(iter_i != objects.end())
@@ -382,7 +416,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         while(iter_i != objects.end())
         {
             objectPtr o = *iter_i;
-            render(o.get());
+            render(o);
             iter_i++;
         }
 

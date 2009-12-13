@@ -1,4 +1,5 @@
 #include "object.h"
+#include "sound.h"
 
 CollisionFlags CObject::collidesWith(CObject *o)
 {
@@ -236,6 +237,7 @@ bool CObject::handleCollision(CObject *p, CObject *q)
                 {
                     q->bumpedInto(p);
                 }
+                objects.push_front(objectPtr(new Sound(BOOM, (p->px + q->px) / 2, (p->py + q->py) / 2 )));
             }
         }
     }

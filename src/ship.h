@@ -11,7 +11,9 @@ class Ship: public CObject
 {
 protected:
     int energy_;
-    int reloadTime_;    
+    int reloadTime_;
+
+    bool isEngineOn_;
 
 public:
     // constructors
@@ -25,4 +27,7 @@ public:
     int getenergy() { return energy_; }
 
     void fire();
+    void thrust(int power);
+
+    friend void render(objectPtr o);
 };

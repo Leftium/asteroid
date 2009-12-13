@@ -186,6 +186,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\sound.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\util.cpp"
 				>
 			</File>
@@ -209,6 +213,10 @@
 			</File>
 			<File
 				RelativePath="..\src\ship.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\sound.h"
 				>
 			</File>
 			<File
