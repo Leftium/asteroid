@@ -20,7 +20,7 @@
 
 #define PAN(x)      (int((x) * 256) / WORLD_W)
 
-const bool DEBUG = true;
+bool DEBUG = true;
 
 // TODO: refactor global variables
 std::list< objectPtr > objects;
@@ -288,9 +288,17 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
 
     objectIter iter_i, iter_j;
 
+    bool debugKeyPressedLastFrame = false;
+
     // main loop ////////////////////////////////////////////////////////////
     while(!key[KEY_ESC])
     {
+        if (!key[KEY_Q] && debugKeyPressedLastFrame)
+        {
+            DEBUG = !DEBUG;
+        }
+        debugKeyPressedLastFrame = key[KEY_Q];
+
         // erase buf //
         clear(buf);
 
