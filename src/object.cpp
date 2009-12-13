@@ -246,6 +246,7 @@ bool CObject::handleCollision(CObject *p, CObject *q)
 
 CObject::CObject(ObjectType _type, CObject *parent)
 {
+    static int nextGenericX = 4;
     double randomHeading = (rand()/(double)RAND_MAX)*2*M_PI;
     double randomBearing = (rand()/(double)RAND_MAX)*2*M_PI;
 
@@ -303,16 +304,19 @@ CObject::CObject(ObjectType _type, CObject *parent)
             break;
 
         case GENERIC:
-        default:
             setEverything(
                     GENERIC,
-                    99,
-                    99,
+                    nextGenericX,
+                    4,
                     0,               // speed
-                    4,               // radius
+                    3,               // radius
                     99,              // health
                     1.1,             // heading
                     1.1);            // bearing
+            nextGenericX += 8;
+            break;
+        default:
+            setEverything( _type, 0, 0, 0, 0, 0, 0, 0);
             break;
     }
 }

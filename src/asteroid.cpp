@@ -297,7 +297,7 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         {
             DEBUG = !DEBUG;
         }
-        debugKeyPressedLastFrame = key[KEY_BACKSPACE];
+        debugKeyPressedLastFrame = (key[KEY_BACKSPACE] != 0);
 
         // erase buf //
         clear(buf);

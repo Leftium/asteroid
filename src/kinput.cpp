@@ -1,6 +1,6 @@
 #include "kinput.h"
 
-kinput::kinput(objectPtr ship, char forward, char back, char left, char right, char fire)
+kinput::kinput(objectPtr ship, char forward, char back, char left, char right, char fire): CObject(GENERIC, ship.get())
 {
     addDependency(ship);
 

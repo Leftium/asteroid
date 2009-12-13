@@ -1,22 +1,13 @@
 #include "ship.h"
 #include "sound.h"
 
-Ship::Ship(double x, double y, int team, double _bearing, int _health)
+Ship::Ship(double x, double y, int team, double _bearing, int _health): CObject(SHIP)
 {
-    type_ = SHIP;
-
-    fx = 0;
-    fy = 0;
-    vx = 0;
-    vy = 0;
-
-    px = x;
-    py = y;
-
+    px      = x;
+    py      = y;
     team_   = team;
     bearing = _bearing;
     health  = _health;
-
     radius  = 10;
     m       = 100;
 

@@ -1,15 +1,12 @@
 #include "sound.h"
 
-Sound::Sound(SoundType type, double x, double y)
+Sound::Sound(SoundType type, double x, double y): CObject(SOUND)
 {
-    type_ = SOUND;
-    soundType = type;
-
     px = x;
     py = y;
 
+    soundType   = type;
     beenUpdated = false;
-
 }
 
 CollisionFlags Sound::collidesWith(CObject *o)
