@@ -293,11 +293,11 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
     // main loop ////////////////////////////////////////////////////////////
     while(!key[KEY_ESC])
     {
-        if (!key[KEY_Q] && debugKeyPressedLastFrame)
+        if (!key[KEY_BACKSPACE] && debugKeyPressedLastFrame)
         {
             DEBUG = !DEBUG;
         }
-        debugKeyPressedLastFrame = key[KEY_Q];
+        debugKeyPressedLastFrame = key[KEY_BACKSPACE];
 
         // erase buf //
         clear(buf);
