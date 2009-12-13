@@ -33,7 +33,7 @@ bool kinput::update()
 
         if(key[k_back])
         {
-            ship->thrust(-7);
+            ship->thrust(-3);
         }
 
         if(key[k_left])

@@ -11,7 +11,6 @@ protected:
 
 public:
     // constructors
-    kinput() {};
     kinput(objectPtr ship, char forward, char back, char left, char right, char fire);
 
     CollisionFlags collidesWith(CObject *o);

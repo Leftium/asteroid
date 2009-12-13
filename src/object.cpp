@@ -7,7 +7,7 @@ CollisionFlags CObject::collidesWith(CObject *o)
     {
         return ALL;
     }
-    else if (type == EXPLOSION || o->type == EXPLOSION)
+    else if (type == EXPLOSION || o->type == EXPLOSION || type == GENERIC || o->type == GENERIC)
     {
         return NONE;
     }
@@ -304,6 +304,15 @@ CObject::CObject(ObjectType _type, CObject *parent)
 
         case GENERIC:
         default:
+            setEverything(
+                    GENERIC,
+                    99,
+                    99,
+                    0,               // speed
+                    4,               // radius
+                    99,              // health
+                    1.1,             // heading
+                    1.1);            // bearing
             break;
     }
 }

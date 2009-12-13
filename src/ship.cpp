@@ -13,7 +13,6 @@ Ship::Ship(double x, double y, int team, double _bearing, int _health)
     px = x;
     py = y;
 
-
     team_   = team;
     bearing = _bearing;
     health  = _health;
@@ -28,7 +27,7 @@ Ship::Ship(double x, double y, int team, double _bearing, int _health)
 
 CollisionFlags Ship::collidesWith(CObject *o)
 {    
-    if (team != o->team)
+    if (o->type == ROCK || o->type == SHIP || (o->type == SHOT && team != o->team))
     {
         return ALL;
     }
@@ -49,7 +48,7 @@ bool Ship::update()
         /// Ship2->SetVelocity(Ship2->speed * .99);
         
         if (reloadTime_ > 0) reloadTime_--;
-        if (energy_ < 1000) energy_ += abs(energy_/100)+2;
+        if (energy_ < 1000) energy_ += abs(energy_/100)+1;
     }
     else
     {
@@ -64,17 +63,17 @@ void Ship::bumpedInto(CObject *o)
     switch(o->type)
     {
         case SHIP:
-            health -= 3;
+            health -= 10;
             Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
             break;
 
         case SHOT:
-            health--;
+            health -= 5;
             Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
 
             break;
         case ROCK:
-            health -= 5;
+            health -= 20;
             Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
             break;
 
@@ -86,25 +85,23 @@ void Ship::bumpedInto(CObject *o)
 
 void Ship::fire()
 {
-    if (energy_ > -10)
-    {
-        energy_ -= 30;
-    }
-
-    if (reloadTime_ == 0 && energy_ > 10)
+    if (energy_ > 200 && reloadTime_ == 0)
     {
         objects.push_front(objectPtr(new CObject(SHOT, this)));
         objects.push_front(objectPtr(new Sound(SHOOT, px, py)));
-        reloadTime_ = 4;
+
+        energy_     = MAX(energy_ - 200, 0);
+        reloadTime_ = 6;
     }
 }
 
 void Ship::thrust(int power)
 {
-    if (power != 0)
+    if (power != 0 && energy_ >= 50)
     {
         addForce(power, bearing);
         isEngineOn_ = true;
+        energy_     = MAX(energy_ - 15, 0);
     }
     else
     {
