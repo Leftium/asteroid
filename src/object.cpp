@@ -371,6 +371,7 @@ inline void CObject::Rotate(double angle)
     bearing += angle;
 }
 
+// TODO: fix elastic collision so collision point is accounted for in final velecities
 // Compute final velocities after elastic collision
 // Results returned via reference variables holding initial velocities
 // Based on: http://farside.ph.utexas.edu/teaching/301/lectures/node76.html
