@@ -45,7 +45,8 @@ protected:
     double radius;    // Radius of object
 
     // TODO: refactor into subclasses?
-    int    health;   // Amount of hits left
+    int    health;    // Amount of hits left
+    int    maxHealth; // Starting value of health
     int    team_;
 
     std::list<objectPtrWeak> dependedObjects;

@@ -138,15 +138,17 @@ void render(objectPtr o)
         const int green = makecol(  0, 255,   0);
         const int blue  = makecol(  0,   0, 255);
 
-        // collision hull
-        circle(buf, o->px, WORLD_H - o->py, o->radius, white);
+        // collision hull/health
+        circle(buf, o->px, WORLD_H - o->py, o->radius, red);
+        double percentHealth = double(o->health)/o->maxHealth/2;
+        arc(buf, o->px, WORLD_H - o->py, itofix((-255*percentHealth)-64), itofix(255*percentHealth-64), o->radius, green);
 
         // velocity indicator
         line(buf, o->px, WORLD_H - o->py, o->px + o->vx * 10, WORLD_H - (o->py + o->vy * 10), blue);
 
         // bearing indicator
         circle(buf, o->px + cos(o->azimuth) * (o->radius-1),
-                  -(o->py + sin(o->azimuth) * (o->radius-1)) + WORLD_H, 1, red);
+                  -(o->py + sin(o->azimuth) * (o->radius-1)) + WORLD_H, 1, white);
 
         // center
         circle(buf, o->px, WORLD_H - o->py, 1, white);

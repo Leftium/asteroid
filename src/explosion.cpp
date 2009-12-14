@@ -2,7 +2,8 @@
 
 Explosion::Explosion(CObject *source): CObject(EXPLOSION, source)
 {
-    health = 30;
+    maxHealth = health = 30;
+    radius = 12;
 }
 
 CollisionFlags Explosion::collidesWith(CObject *o)

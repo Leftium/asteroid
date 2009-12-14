@@ -304,6 +304,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
             }
             break;
     }
+    maxHealth = health;
 }
 
 void CObject::setEverything(
