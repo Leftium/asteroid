@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\rock.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\ship.cpp"
 				>
 			</File>
@@ -233,6 +237,10 @@
 			</File>
 			<File
 				RelativePath="..\src\object.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\rock.h"
 				>
 			</File>
 			<File

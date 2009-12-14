@@ -76,7 +76,7 @@ public:
 
     void addDependency(objectPtr obj);
 
-    inline void Rotate(double angle);
+    void Rotate(double angle);
 
     // TODO: Move debugging outside of object class?
     void ShowStats(BITMAP *pDest);

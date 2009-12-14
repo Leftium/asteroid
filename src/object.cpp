@@ -5,22 +5,7 @@
 
 CollisionFlags CObject::collidesWith(CObject *o)
 {
-    if (type == ROCK && o->type == ROCK)
-    {
-        return ALL;
-    }
-    else if (type == EXPLOSION || o->type == EXPLOSION || type == GENERIC || o->type == GENERIC || o->type == STARFIELD || o->type == SOUND)
-    {
-        return NONE;
-    }
-    else if (((type == SHOT) || (type == SHIP)) && (team != o->team))
-    {
-        return ALL;
-    }
-    else
-    {
-        return NONE;
-    }
+    return NONE;
 }
 
 void CObject::addDependency(objectPtr obj)
@@ -46,32 +31,10 @@ bool CObject::checkDependencies()
     return false;
 }
 
-
 bool CObject::update()
 {
-    switch(type)
-    {
-        case ROCK:
-            if (health > 0)
-            {
-                Rotate(1 * FIX_PER_RAD);
-                // action: rock: move
-                applyForces();
-                return false;
-            }
-            else
-            {
-                // action: rock: explosion animation
-                objects.push_back(objectPtr(new Explosion(this)));
-
-                return true;
-            }
-            break;
-
-        default:
-            return false;
-            break;
-    }
+    // derived class should handle any action required
+    return false;
 }
 
 // ISCOLLISION //////////////////////////////////////////////////////////////////
@@ -80,7 +43,6 @@ bool CObject::isCollision(CObject *p1, CObject *p2)
     return ( ( squareDistance(p1->px, p1->py, p2->px, p2->py ) ) <
              ( pow(p1->radius + p2->radius, 2) ) );
 }
-
 
 bool CObject::handleCollision(CObject *p, CObject *q)
 {
@@ -339,7 +301,7 @@ void CObject::wrapPosition()
     if (py > MAX_Y) py -= MAX_Y;
 }
 
-inline void CObject::Rotate(double angle)
+void CObject::Rotate(double angle)
 {
     bearing += angle;
 }
@@ -360,32 +322,7 @@ void CObject::elasticCollide(double &v1, double m1, double &v2, double m2)
 
 void CObject::bumpedInto(CObject *o)
 {
-    switch(type)
-    {
-        case ROCK:
-            switch(o->type)
-            {
-                case SHOT:
-                    health -= 2;
-                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-                    break;
-
-                case ROCK:
-                case SHIP:
-                    health -= 5;
-                    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-                    break;
-
-                default:
-                    break;
-            }
-            break;
-
-        case GENERIC:
-        default:
-            break;
-    }
-    return;
+    // any action should be handled in derived class if needed
 }
 
 void CObject::ShowStats(BITMAP *pDest)

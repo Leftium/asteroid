@@ -9,6 +9,7 @@
 #include "ship.h"
 #include "sound.h"
 #include "starfield.h"
+#include "rock.h"
 
 #include <list>
 #include <memory>
@@ -300,7 +301,7 @@ int main()
 
     for (int i = 0; i<NUM_ROCKS; i++)
     {
-        objects.push_back(objectPtr(new CObject(ROCK, NULL)));
+        objects.push_back(objectPtr(new Rock()));
     }
 
     objectIter iter_i, iter_j;
