@@ -7,11 +7,11 @@ CollisionFlags CObject::collidesWith(CObject *o)
     {
         return ALL;
     }
-    else if (type == EXPLOSION || o->type == EXPLOSION || type == GENERIC || o->type == GENERIC)
+    else if (type == EXPLOSION || o->type == EXPLOSION || type == GENERIC || o->type == GENERIC || o->type == STARFIELD)
     {
         return NONE;
     }
-    else if (team != o->team)
+    else if (((type == SHOT) || (type == SHIP)) && (team != o->team))
     {
         return ALL;
     }
@@ -310,16 +310,16 @@ CObject::CObject(ObjectType _type, CObject *parent)
             setEverything(
                     GENERIC,
                     nextGenericX,
-                    4,
+                    12,
                     0,               // speed
                     3,               // radius
                     99,              // health
                     1.1,             // heading
                     1.1);            // bearing
-            nextGenericX += 8;
+            nextGenericX += 12;
             break;
         default:
-            setEverything( _type, 0, 0, 0, 0, 0, 0, 0);
+            setEverything( _type, 40, 40, 0, 3, 97, 0, 0);
             break;
     }
 }

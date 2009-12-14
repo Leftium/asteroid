@@ -152,7 +152,7 @@ void render(objectPtr o)
         circle(buf, o->px, WORLD_H - o->py, 1, white);
 
         // object id
-        textprintf_ex(buf, font, (o->px + o->radius), WORLD_H - (o->py - o->radius), white, -1, "%x", o->id);
+        textprintf_ex(buf, font, (o->px + o->radius), WORLD_H - (o->py - o->radius), white, -1, "%X", o->id);
     }
 }
 
@@ -285,12 +285,9 @@ int main()
     ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
     objects.push_front(objectPtr(new kinput(objects.front(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H) ));
 
-    ShipPtrWeak Ship2Weak;
-    if (objectPtr Ship1 = Ship1Weak.lock()) {
-        objects.push_front(objectPtr(new Ship(220, 100, 2, M_PI, 75)));
-        Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
-        objects.push_front(objectPtr(new kinput(objects.front(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE) ));
-    }
+    objects.push_front(objectPtr(new Ship(220, 100, 2, M_PI, 75)));
+    ShipPtrWeak Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
+    objects.push_front(objectPtr(new kinput(objects.front(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE) ));
 
     for (int i = 0; i<NUM_ROCKS; i++)
     {
