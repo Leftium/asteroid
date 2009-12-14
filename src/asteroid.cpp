@@ -51,6 +51,7 @@ void render(objectPtr o)
     ShipPtr s;
     StarfieldPtr starfield;
 
+    double scale = 0;
     switch (o->type)
     {
         case STARFIELD:
@@ -105,7 +106,9 @@ void render(objectPtr o)
             break;
 
         case EXPLOSION:
-            bmp = explode;
+            scale = o->radius/12;
+            rotate_scaled_sprite(buf, explode, o->px - (explode->w >> 1)*scale,
+                                             -(o->py + (explode->h >> 1)*scale) + WORLD_H, RAD2FIX( o->azimuth ), ftofix(scale));
             break;
 
         case SOUND:
