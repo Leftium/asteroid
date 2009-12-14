@@ -103,7 +103,9 @@ void render(objectPtr o)
             break;
 
         case ROCK:
-            bmp = rock;
+            scale = o->radius/7;
+            rotate_scaled_sprite(buf, rock, o->px - (rock->w >> 1)*scale,
+                                          -(o->py + (rock->h >> 1)*scale) + WORLD_H, RAD2FIX( o->azimuth ), ftofix(scale));
             break;
 
         case EXPLOSION:

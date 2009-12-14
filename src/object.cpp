@@ -203,16 +203,23 @@ CObject::CObject(ObjectType _type, CObject *parent)
     switch (_type)
     {
         case ROCK:
-            setEverything(
-                    ROCK,
-                    Rnd(MAX_X),
-                    Rnd(MAX_Y),
-                    0.1,            // speed
-                    5,              // radius
-                    10,             // health
-                    randomHeading,  // heading
-                    randomBearing,  // bearing
-                    200);           // mass
+            if (parent == NULL)
+            {
+                setEverything(
+                        ROCK,
+                        Rnd(MAX_X),
+                        Rnd(MAX_Y),
+                        0.1,            // speed
+                        5,              // radius
+                        10,             // health
+                        randomHeading,  // heading
+                        randomBearing,  // bearing
+                        200);           // mass
+            }
+            else
+            {
+                setEverything( _type, parent->px, parent->py, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing, parent->m);
+            }
             break;
 
         case GENERIC:
@@ -230,7 +237,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
         default:
             if (parent != NULL)
             {
-                setEverything( _type, parent->px, parent->py, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing);
+                setEverything( _type, parent->px, parent->py, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing, parent->m);
             }
             else
             {

@@ -4,11 +4,9 @@
 
 class Rock: public CObject
 {
-protected:
-
 public:
     // constructors
-    Rock::Rock();
+    Rock::Rock(Rock *parent=NULL);
 
     virtual CollisionFlags collidesWith(CObject *o);
     virtual bool update();
