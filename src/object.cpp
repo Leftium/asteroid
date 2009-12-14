@@ -1,5 +1,6 @@
 #include "object.h"
 #include "sound.h"
+#include "explosion.h"
 
 CollisionFlags CObject::collidesWith(CObject *o)
 {
@@ -64,20 +65,6 @@ bool CObject::update()
             return false;
             break;
 
-        case EXPLOSION:
-            health--;
-            if (health > 0)
-            {
-                applyForces();
-                Rotate(10 * FIX_PER_RAD);
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-            break;
-
         case ROCK:
             if (health > 0)
             {
@@ -89,7 +76,7 @@ bool CObject::update()
             else
             {
                 // action: rock: explosion animation
-                objects.push_back(objectPtr(new CObject(EXPLOSION, this)));
+                objects.push_back(objectPtr(new Explosion(this)));
 
                 return true;
             }
@@ -294,18 +281,6 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     200);           // mass
             break;
 
-        case EXPLOSION:
-            setEverything(
-                    EXPLOSION,
-                    parent->px,
-                    parent->py,
-                    parent->speed,   // speed
-                    0,               // radius
-                    30,              // health
-                    parent->heading, // heading
-                    randomBearing);  // bearing
-            break;
-
         case GENERIC:
             setEverything(
                     GENERIC,
@@ -319,7 +294,14 @@ CObject::CObject(ObjectType _type, CObject *parent)
             nextGenericX += 12;
             break;
         default:
-            setEverything( _type, 40, 40, 0, 3, 97, 0, 0);
+            if (parent != NULL)
+            {
+                setEverything( _type, parent->px, parent->py, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing);
+            }
+            else
+            {
+                setEverything( _type, 40, 40, 0, 3, 97, 0, 0);
+            }
             break;
     }
 }
@@ -431,9 +413,7 @@ void CObject::bumpedInto(CObject *o)
                     break;
             }
             break;
-        case EXPLOSION:
-            // don't do anything
-            break;
+
         case GENERIC:
         default:
             break;

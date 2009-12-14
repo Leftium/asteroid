@@ -1,5 +1,6 @@
 #include "ship.h"
 #include "sound.h"
+#include "explosion.h"
 
 Ship::Ship(double x, double y, int team, double _bearing, int _health): CObject(SHIP)
 {
@@ -43,7 +44,7 @@ bool Ship::update()
     }
     else
     {
-        objects.push_back(objectPtr(new CObject(EXPLOSION, this) ));
+        objects.push_back(objectPtr(new Explosion(this)));
         return true;
     }
     return false;
