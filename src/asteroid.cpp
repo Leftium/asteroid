@@ -35,6 +35,11 @@ int gfx_bpp = 8;
 
 void render(objectPtr o)
 {
+    const int white = makecol(255, 255, 255);
+    const int red   = makecol(255,   0,   0);
+    const int green = makecol(  0, 255,   0);
+    const int blue  = makecol(  0,   0, 255);
+
     static int ship1EngineVoice = -1;
     static int ship2EngineVoice = -1;
 
@@ -51,6 +56,10 @@ void render(objectPtr o)
         case STARFIELD:
             starfield = std::tr1::dynamic_pointer_cast<Starfield>(o);
             starfield->draw_starfield_3d(buf);
+            break;
+
+        case FLASH:
+            circlefill(buf, o->px, WORLD_H - o->py, o->radius, white);
             break;
 
         case SHIP:
@@ -133,11 +142,6 @@ void render(objectPtr o)
 
     if (DEBUG)
     {
-        const int white = makecol(255, 255, 255);
-        const int red   = makecol(255,   0,   0);
-        const int green = makecol(  0, 255,   0);
-        const int blue  = makecol(  0,   0, 255);
-
         // collision hull/health
         circle(buf, o->px, WORLD_H - o->py, o->radius, red);
         double percentHealth = double(o->health)/o->maxHealth/2;

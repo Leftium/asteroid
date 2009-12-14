@@ -1,6 +1,7 @@
 #include "object.h"
 #include "sound.h"
 #include "explosion.h"
+#include "flash.h"
 
 CollisionFlags CObject::collidesWith(CObject *o)
 {
@@ -8,7 +9,7 @@ CollisionFlags CObject::collidesWith(CObject *o)
     {
         return ALL;
     }
-    else if (type == EXPLOSION || o->type == EXPLOSION || type == GENERIC || o->type == GENERIC || o->type == STARFIELD)
+    else if (type == EXPLOSION || o->type == EXPLOSION || type == GENERIC || o->type == GENERIC || o->type == STARFIELD || o->type == SOUND)
     {
         return NONE;
     }
@@ -264,8 +265,8 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     25,               // health
                     parent->heading,  // heading
                     parent->bearing,  // bearing
-                    100);             // mass
-            addForce(3*m, parent->bearing);
+                    10);              // mass
+            addForce(4*m, parent->bearing);
             break;
 
         case ROCK:
@@ -392,8 +393,7 @@ void CObject::bumpedInto(CObject *o)
     {
         case SHOT:
             health = 0;
-            // render flash
-            circlefill(buf, px, MAX_Y - py, 5, makecol(255, 255, 255));
+            objects.push_back(objectPtr(new Flash(this)));
             break;
 
         case ROCK:

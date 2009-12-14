@@ -178,6 +178,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\flash.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\kinput.cpp"
 				>
 			</File>
@@ -213,6 +217,10 @@
 			</File>
 			<File
 				RelativePath="..\src\explosion.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\flash.h"
 				>
 			</File>
 			<File
