@@ -149,10 +149,9 @@ void render(objectPtr o)
     }
 }
 
-// MAIN /////////////////////////////////////////////////////////////////////
-int main()
+int initialize()
 {
-  // init stuff ///////////////////////////////////////////////////////////
+    // init stuff ///////////////////////////////////////////////////////////
     srand(7942);
     allegro_init();
     install_timer();
@@ -218,7 +217,7 @@ int main()
     if (!palette_object)
     {
         allegro_message("Error loading PAL data!\n");
-        exit(2);
+        return 2;
     }
 
     set_palette((RGB *) palette_object->dat);
@@ -232,7 +231,7 @@ int main()
     if (!data)
     {
         allegro_message("Error loading game data!\n");
-        exit(2);
+        return 2;
     }
 
     // load MIDI ////////////////////////////////////////////////////////////
@@ -258,14 +257,25 @@ int main()
 
     buf = create_bitmap(WORLD_W, WORLD_H);
 
+    return 0;
+}
+
+// MAIN /////////////////////////////////////////////////////////////////////
+int main()
+{
+    if (int error = (initialize() != 0))
+    {
+        exit(error);
+    }
+
     int Ship1Color = makecol(97, 207, 207);
     int Ship2Color = makecol(97, 255, 190);
+
     int StarColor[8];
     for (int i=0; i<8; i++)
     {
         StarColor[i] = makecol(255*i/7, 255*i/7, 255*i/7);
     }
-
 
     // create objects ///////////////////////////////////////////////////////
     objects.push_front(objectPtr(new Ship(80, 100, 1, 0, 75)));
