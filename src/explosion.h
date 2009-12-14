@@ -5,6 +5,7 @@
 class Explosion: public CObject
 {
 protected:
+    double maxRadius;
 
 public:
     // constructor

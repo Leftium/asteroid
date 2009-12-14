@@ -234,6 +234,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     1.1);            // bearing
             nextGenericX += 12;
             break;
+
         default:
             if (parent != NULL)
             {

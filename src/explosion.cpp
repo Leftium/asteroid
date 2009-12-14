@@ -3,7 +3,8 @@
 Explosion::Explosion(CObject *source): CObject(EXPLOSION, source)
 {
     maxHealth = health = 30;
-    radius = 5;
+    maxRadius = radius * 2;
+    radius = 1;
 }
 
 CollisionFlags Explosion::collidesWith(CObject *o)
@@ -20,7 +21,7 @@ bool Explosion::update()
 
         if (health  > 15)
         {
-            if (radius < 50)
+            if (radius < maxRadius)
             {
                 radius *= 1.5;
             }
