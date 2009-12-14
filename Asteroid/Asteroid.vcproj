@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\starfield.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\util.cpp"
 				>
 			</File>
@@ -217,6 +221,10 @@
 			</File>
 			<File
 				RelativePath="..\src\sound.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\starfield.h"
 				>
 			</File>
 			<File

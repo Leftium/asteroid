@@ -8,6 +8,7 @@
 #include "kinput.h"
 #include "ship.h"
 #include "sound.h"
+#include "starfield.h"
 
 #include <list>
 #include <memory>
@@ -43,9 +44,15 @@ void render(objectPtr o)
 
     SoundPtr sound;
     ShipPtr s;
+    StarfieldPtr starfield;
 
     switch (o->type)
     {
+        case STARFIELD:
+            starfield = std::tr1::dynamic_pointer_cast<Starfield>(o);
+            starfield->draw_starfield_3d(buf);
+            break;
+
         case SHIP:
             s = std::tr1::dynamic_pointer_cast<Ship>(o);
             if (o->team == 1)
@@ -271,13 +278,9 @@ int main()
     int Ship1Color = makecol(97, 207, 207);
     int Ship2Color = makecol(97, 255, 190);
 
-    int StarColor[8];
-    for (int i=0; i<8; i++)
-    {
-        StarColor[i] = makecol(255*i/7, 255*i/7, 255*i/7);
-    }
-
     // create objects ///////////////////////////////////////////////////////
+    objects.push_front(objectPtr(new Starfield()));
+
     objects.push_front(objectPtr(new Ship(80, 100, 1, 0, 75)));
     ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
     objects.push_front(objectPtr(new kinput(objects.front(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H) ));
@@ -293,16 +296,6 @@ int main()
     {
         objects.push_front(objectPtr(new CObject(ROCK, NULL)));
     }
-
-// STAR FIELD STUFF BY SHAWN HARGRAEVES //////////////////////////////////////
-int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
-#define MAX_STARS       128
-
-    volatile struct {
-       fixed x, y, z;
-       int ox, oy;
-    } star[MAX_STARS];
-
 
     objectIter iter_i, iter_j;
 
@@ -352,45 +345,6 @@ int x, y, ix, iy, c2, star_count = 0, star_count_count = 0;
         }
 
         // DRAW EVERYTHING //////////////////////////////////////////////////
-
-                // starfield ( by Shawn Hargraeves)
-
-     /* animate the starfield */
-      for (int c=0; c<MAX_STARS; c++) {
-     if (star[c].z <= itofix(1)) {
-        x = itofix(rand()&0xff);
-        y = itofix(((rand()&3)+1)*buf->w);
-        star[c].x = fmul(fcos(x), y);
-        star[c].y = fmul(fsin(x), y);
-        star[c].z = itofix((rand() & 0x1f) + 0x20);
-     }
-
-     x = fdiv(star[c].x, star[c].z);
-     y = fdiv(star[c].y, star[c].z);
-     ix = (int)(x>>16) + buf->w/2;
-     iy = (int)(y>>16) + buf->h/2;
-     // putpixel(screen, star[c].ox, star[c].oy, 0);
-     if ((ix >= 0) && (ix < buf->w) && (iy >= 0) && (iy <= buf->h)) {
-        // if (getpixel(screen, ix, iy) == 0) {
-           if (c < star_count) {
-          c2 = 7-(int)(star[c].z>>18);
-          putpixel(buf, ix, iy, StarColor[MID(0, c2, 7)]);
-           }
-           star[c].ox = ix;
-           star[c].oy = iy;
-        // }
-        star[c].z -= 4096;
-     }
-     else
-        star[c].z = 0;
-      }
-
-      if (star_count < MAX_STARS) {
-     if (star_count_count++ >= 32) {
-        star_count_count = 0;
-        star_count++;
-     }
-      }
 
         // life bars
         if (ShipPtr Ship1 = Ship1Weak.lock())
