@@ -51,21 +51,6 @@ bool CObject::update()
 {
     switch(type)
     {
-        case SHOT:
-            health--;
-            if (health > 0)
-            {
-                // action: projectile: move
-                applyForces();
-                Rotate(6 * FIX_PER_RAD);
-            }
-            else
-            {
-                return true;
-            }
-            return false;
-            break;
-
         case ROCK:
             if (health > 0)
             {
@@ -255,20 +240,6 @@ CObject::CObject(ObjectType _type, CObject *parent)
 
     switch (_type)
     {
-        case SHOT:
-            setEverything(
-                    SHOT,
-                    parent->px,
-                    parent->py,
-                    parent->speed,    // speed
-                    4,                // radius
-                    25,               // health
-                    parent->heading,  // heading
-                    parent->bearing,  // bearing
-                    10);              // mass
-            addForce(4*m, parent->bearing);
-            break;
-
         case ROCK:
             setEverything(
                     ROCK,
@@ -391,11 +362,6 @@ void CObject::bumpedInto(CObject *o)
 {
     switch(type)
     {
-        case SHOT:
-            health = 0;
-            objects.push_back(objectPtr(new Flash(this)));
-            break;
-
         case ROCK:
             switch(o->type)
             {

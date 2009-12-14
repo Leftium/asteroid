@@ -1,6 +1,7 @@
 #include "ship.h"
 #include "sound.h"
 #include "explosion.h"
+#include "shot.h"
 
 Ship::Ship(double x, double y, int team, double _bearing, int _health): CObject(SHIP)
 {
@@ -79,7 +80,7 @@ void Ship::fire()
 {
     if (energy_ > 200 && reloadTime_ == 0)
     {
-        objects.push_back(objectPtr(new CObject(SHOT, this)));
+        objects.push_back(objectPtr(new Shot(this)));
         objects.push_back(objectPtr(new Sound(SHOOT, px, py)));
 
         energy_     = MAX(energy_ - 200, 0);
