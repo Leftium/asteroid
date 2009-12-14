@@ -43,7 +43,7 @@ bool Ship::update()
     }
     else
     {
-        objects.push_front(objectPtr(new CObject(EXPLOSION, this) ));
+        objects.push_back(objectPtr(new CObject(EXPLOSION, this) ));
         return true;
     }
     return false;
@@ -78,8 +78,8 @@ void Ship::fire()
 {
     if (energy_ > 200 && reloadTime_ == 0)
     {
-        objects.push_front(objectPtr(new CObject(SHOT, this)));
-        objects.push_front(objectPtr(new Sound(SHOOT, px, py)));
+        objects.push_back(objectPtr(new CObject(SHOT, this)));
+        objects.push_back(objectPtr(new Sound(SHOOT, px, py)));
 
         energy_     = MAX(energy_ - 200, 0);
         reloadTime_ = 6;

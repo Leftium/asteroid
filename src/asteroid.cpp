@@ -279,19 +279,19 @@ int main()
     int Ship2Color = makecol(97, 255, 190);
 
     // create objects ///////////////////////////////////////////////////////
-    objects.push_front(objectPtr(new Starfield()));
+    objects.push_back(objectPtr(new Starfield()));
 
-    objects.push_front(objectPtr(new Ship(80, 100, 1, 0, 75)));
-    ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
-    objects.push_front(objectPtr(new kinput(objects.front(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H) ));
+    objects.push_back(objectPtr(new Ship(80, 100, 1, 0, 75)));
+    ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.back());
+    objects.push_back(objectPtr(new kinput(objects.back(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H) ));
 
-    objects.push_front(objectPtr(new Ship(220, 100, 2, M_PI, 75)));
-    ShipPtrWeak Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.front());
-    objects.push_front(objectPtr(new kinput(objects.front(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE) ));
+    objects.push_back(objectPtr(new Ship(220, 100, 2, M_PI, 75)));
+    ShipPtrWeak Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.back());
+    objects.push_back(objectPtr(new kinput(objects.back(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE) ));
 
     for (int i = 0; i<NUM_ROCKS; i++)
     {
-        objects.push_front(objectPtr(new CObject(ROCK, NULL)));
+        objects.push_back(objectPtr(new CObject(ROCK, NULL)));
     }
 
     objectIter iter_i, iter_j;

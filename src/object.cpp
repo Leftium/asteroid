@@ -25,7 +25,7 @@ void CObject::addDependency(objectPtr obj)
 {
     if (obj)
     {
-        dependedObjects.push_front(objectPtrWeak(obj));
+        dependedObjects.push_back(objectPtrWeak(obj));
     }
 }
 
@@ -89,7 +89,7 @@ bool CObject::update()
             else
             {
                 // action: rock: explosion animation
-                objects.push_front(objectPtr(new CObject(EXPLOSION, this)));
+                objects.push_back(objectPtr(new CObject(EXPLOSION, this)));
 
                 return true;
             }
@@ -237,7 +237,7 @@ bool CObject::handleCollision(CObject *p, CObject *q)
                 {
                     q->bumpedInto(p);
                 }
-                objects.push_front(objectPtr(new Sound(BOOM, (p->px + q->px) / 2, (p->py + q->py) / 2 )));
+                objects.push_back(objectPtr(new Sound(BOOM, (p->px + q->px) / 2, (p->py + q->py) / 2 )));
             }
         }
     }
