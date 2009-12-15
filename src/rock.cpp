@@ -10,7 +10,7 @@ Rock::Rock(Rock *parent): CObject(ROCK, parent)
     double ratio = 1;
     if (parent != NULL)
     {
-        m = parent->m / 2;
+        m = randf() * (parent->m/2-8) + 8;
         parent->m -= m;
 
         double parentRatio = parent->m / stdMass;
@@ -23,6 +23,10 @@ Rock::Rock(Rock *parent): CObject(ROCK, parent)
 
         vx += (randf() * 2) - 1;
         vy += (randf() * 2) - 1;
+
+        // move new rock to outer edge of parent
+        px += cos(heading) * (parent->radius);
+        py += sin(heading) * (parent->radius);
     }
     else
     {
@@ -68,7 +72,7 @@ void Rock::bumpedInto(CObject *o)
     switch(o->type)
     {
         case SHOT:
-            health -= 34;
+            health -= 20;
             Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
             break;
 
@@ -82,7 +86,7 @@ void Rock::bumpedInto(CObject *o)
             break;
     }
 
-    if (health > 50)
+    if (m > 16)
     {
         if (pow(double(health) / double(maxHealth), 2) < randf())
         {
