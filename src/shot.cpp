@@ -5,7 +5,7 @@ Shot::Shot(CObject *parent): CObject(SHOT, parent)
 {
     radius = 4;
     m      = 10;
-    maxHealth = health = 25;
+    maxHealth = health = 50;
 
     addForce(4*m, parent->bearing);
 }

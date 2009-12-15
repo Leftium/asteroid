@@ -83,7 +83,7 @@ void Ship::fire()
         objects.push_back(objectPtr(new Shot(this)));
         objects.push_back(objectPtr(new Sound(SHOOT, px, py)));
 
-        energy_     = MAX(energy_ - 200, 0);
+        energy_     = MAX(energy_ - 20, 0);
         reloadTime_ = 12;
     }
 }
