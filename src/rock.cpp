@@ -20,10 +20,10 @@ Rock::Rock(Rock *parent): CObject(ROCK, parent)
     }
     else
     {
-        ratio = 4;
+        ratio = 16;
     }
     m         = ratio * stdMass;
-    radius    = ratio * stdRadius;
+    radius    = sqrt(ratio) * stdRadius;
     health    = ratio * stdHealth;
     maxHealth = health;
 }
