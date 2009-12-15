@@ -13,10 +13,16 @@ Rock::Rock(Rock *parent): CObject(ROCK, parent)
         m = parent->m / 2;
         parent->m -= m;
 
+        double parentRatio = parent->m / stdMass;
+        parent->m         = parentRatio * stdMass;
+        parent->radius    = sqrt(parentRatio) * stdRadius;
+        parent->health    = parentRatio * stdHealth;
+        parent->maxHealth = parent->health;
+
         ratio = m/stdMass;
 
-        vx += (double(AL_RAND()) / RAND_MAX * 2) - 1;
-        vy += (double(AL_RAND()) / RAND_MAX * 2) - 1;
+        vx += (randf() * 2) - 1;
+        vy += (randf() * 2) - 1;
     }
     else
     {
@@ -38,7 +44,7 @@ CollisionFlags Rock::collidesWith(CObject *o)
   else
   {
     return NONE;
-  }  
+  }
 }
 
 bool Rock::update()
@@ -53,12 +59,6 @@ bool Rock::update()
     {
         // explosion
         objects.push_back(objectPtr(new Explosion(this)));
-
-        // spawn some smaller rocks
-        while (m > 50)
-        {
-           objects.push_back(objectPtr(new Rock(this)));
-        }
         return true;
     }
 }
@@ -80,5 +80,13 @@ void Rock::bumpedInto(CObject *o)
 
         default:
             break;
-    } 
+    }
+
+    if (health > 50)
+    {
+        if (pow(double(health) / double(maxHealth), 2) < randf())
+        {
+            objects.push_back(objectPtr(new Rock(this)));
+        }
+    }
 }

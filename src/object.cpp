@@ -184,8 +184,8 @@ CObject::CObject(ObjectType _type, CObject *parent)
     static int currentId    = 0;
     static int nextGenericX = 4;
 
-    double randomHeading = (rand()/(double)RAND_MAX)*2*M_PI;
-    double randomBearing = (rand()/(double)RAND_MAX)*2*M_PI;
+    double randomHeading = randf()*2*M_PI;
+    double randomBearing = randf()*2*M_PI;
 
     id = currentId++;
     fx = 0;

@@ -2,7 +2,12 @@
 
 int Rnd(int max)
 {
-    return rand() % max;
+    return AL_RAND() / (RAND_MAX / max + 1);
+}
+
+double randf()
+{
+    return double(AL_RAND()) / (double(RAND_MAX) + 1.0);
 }
 
 // convert radians (0 == E, O to 2PI)
