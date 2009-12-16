@@ -140,17 +140,17 @@ struct vector2ui: public vector2<unsigned int>
 };
 
 
-struct vector2f: public vector2<float>
+struct vector2f: public vector2<double>
 {
-    VECTOR2_CTORS(vector2f, float)
+    VECTOR2_CTORS(vector2f, double)
 
     //! gets the length of this vector squared
-    float length_squared() const
-    { return (float)(*this * *this); }
+    double length_squared() const
+    { return (double)(*this * *this); }
 
     //! gets the length of this vector
-    float length() const
-    { return (float)sqrt(*this * *this); }
+    double length() const
+    { return (double)sqrt(*this * *this); }
 
     //! normalizes this vector
     void normalize()
@@ -177,10 +177,10 @@ struct vector2f: public vector2<float>
     { return v * (*this * v)/(v*v); }
 
     //! computes the angle between 2 arbitrary vectors
-    static inline float angle(const vector2f &v1, const vector2f &v2)
+    static inline double angle(const vector2f &v1, const vector2f &v2)
     { return acosf((v1*v2) / (v1.length()*v2.length())); }
 
     //! computes the angle between 2 normalized arbitrary vectors
-    static inline float angle_normalized(const vector2f &v1, const vector2f &v2)
+    static inline double angle_normalized(const vector2f &v1, const vector2f &v2)
     { return acosf(v1*v2); }
 };
