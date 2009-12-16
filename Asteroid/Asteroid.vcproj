@@ -263,6 +263,10 @@
 				RelativePath="..\src\util.h"
 				>
 			</File>
+			<File
+				RelativePath="..\src\vector2.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

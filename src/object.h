@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <list>
 #include "util.h"
+#include "vector2.h"
 
 class CObject;
 
