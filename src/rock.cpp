@@ -78,7 +78,7 @@ void Rock::bumpedInto(CObject *o)
 
         case ROCK:
         case SHIP:
-            health -= 5;
+            CObject::bumpedInto(o);
             Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
             break;
 

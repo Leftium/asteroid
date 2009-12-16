@@ -55,18 +55,15 @@ void Ship::bumpedInto(CObject *o)
 {
     switch(o->type)
     {
-        case SHIP:
-            health -= 10;
-            Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-            break;
-
         case SHOT:
             health -= 5;
             Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
 
             break;
+
+        case SHIP:
         case ROCK:
-            health -= 20;
+            CObject::bumpedInto(o);
             Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
             break;
 

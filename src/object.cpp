@@ -330,7 +330,8 @@ void CObject::elasticCollide(double &v1, double m1, double &v2, double m2)
 
 void CObject::bumpedInto(CObject *o)
 {
-    // any action should be handled in derived class if needed
+    // use this in derived classes to get radius-based damage
+    health -= o->radius;
 }
 
 void CObject::ShowStats(BITMAP *pDest)
