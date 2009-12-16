@@ -20,13 +20,6 @@ Rock::Rock(Rock *parent): CObject(ROCK, parent)
         parent->maxHealth = parent->health;
 
         ratio = m/stdMass;
-
-        vx += (randf() * 2) - 1;
-        vy += (randf() * 2) - 1;
-
-        // move new rock to outer edge of parent
-        px += cos(heading) * (parent->radius);
-        py += sin(heading) * (parent->radius);
     }
     else
     {
@@ -36,6 +29,24 @@ Rock::Rock(Rock *parent): CObject(ROCK, parent)
     radius    = sqrt(ratio) * stdRadius;
     health    = ratio * stdHealth;
     maxHealth = health;
+
+    if (parent != NULL)
+    {
+        double rndh = randf() * 2 * M_PI;
+        px += cos(rndh) * (parent->radius/2);
+        py += sin(rndh) * (parent->radius/2);
+
+        parent->px -= cos(rndh) * (radius/2);
+        parent->py -= sin(rndh) * (radius/2);
+
+        rndh = randf() * 2 * M_PI;
+        double rndSpeed = randf();
+        vx += cos(rndh) * (rndSpeed);
+        vy += sin(rndh) * (rndSpeed);
+
+        parent->vx -= cos(rndh) * (rndSpeed);
+        parent->vy -= sin(rndh) * (rndSpeed);
+    }
 }
 
 CollisionFlags Rock::collidesWith(CObject *o)

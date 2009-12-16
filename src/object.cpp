@@ -76,36 +76,14 @@ bool CObject::handleCollision(CObject *p, CObject *q)
         else
         {
             // determine time of collision
-            double discriminant = sqrt(discriminantSquared);
-            double t1 = (-b + discriminant) / (2*a);
-            double t2 = (-b - discriminant) / (2*a);
-            double t  = -999;
+            double t  = 999;
 
-            if (isCollision(p, q))
+            if (!isCollision(p, q))
             {
-                // collision in past: t = negative time
-                if ((t1 < 0))
-                {
-                    t = t1;
-                }
-                else if ((t2 < 0))
-                {
-                    t = t2;
-                }
-            }
-            else
-            {
-                if ((t1 >= 0) && (t1 < t2))
-                {
-                    t = t1;
-                }
-                else if ((t2 >= 0) && (t2 < t1))
-                {
-                    t = t2;
-                }
+                t = (-b - sqrt(discriminantSquared)) / (2*a);
             }
 
-            if (t >= 0 && t < 1)
+            if (t >= 0 && t <= 1)
             {
                 bool doPhysicsP = (p->collidesWith(q) & PHYSICS_SELF) ||
                                   (q->collidesWith(p) & PHYSICS_TARGET);

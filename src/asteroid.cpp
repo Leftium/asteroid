@@ -164,7 +164,7 @@ void render(objectPtr o)
         circle(buf, o->px, WORLD_H - o->py, 1, white);
 
         // object id
-        textprintf_ex(buf, font, (o->px + o->radius), WORLD_H - (o->py - o->radius), white, -1, "%X", o->id);
+        // textprintf_ex(buf, font, (o->px + o->radius), WORLD_H - (o->py - o->radius), white, -1, "%X", o->id);
     }
 }
 
