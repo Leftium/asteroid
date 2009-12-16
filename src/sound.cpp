@@ -2,8 +2,8 @@
 
 Sound::Sound(SoundType type, double x, double y): CObject(SOUND)
 {
-    px = x;
-    py = y;
+    p.x = x;
+    p.y = y;
 
     soundType   = type;
     beenUpdated = false;

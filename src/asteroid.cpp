@@ -61,7 +61,7 @@ void render(objectPtr o)
             break;
 
         case FLASH:
-            circlefill(buf, o->px, WORLD_H - o->py, o->radius, white);
+            circlefill(buf, o->p.x, WORLD_H - o->p.y, o->radius, white);
             break;
 
         case SHIP:
@@ -81,11 +81,11 @@ void render(objectPtr o)
             {
                 if (*engineVoice < 0)
                 {
-                    *engineVoice = play_sample(engine, 64, PAN(o->px), 1000, TRUE);
+                    *engineVoice = play_sample(engine, 64, PAN(o->p.x), 1000, TRUE);
                 }
                 else
                 {
-                    voice_set_pan(*engineVoice, PAN(o->px));
+                    voice_set_pan(*engineVoice, PAN(o->p.x));
                     voice_set_volume(*engineVoice, 64);
                 }
             }
@@ -104,14 +104,14 @@ void render(objectPtr o)
 
         case ROCK:
             scale = o->radius/7;
-            rotate_scaled_sprite(buf, rock, o->px - (rock->w >> 1)*scale,
-                                          -(o->py + (rock->h >> 1)*scale) + WORLD_H, RAD2FIX( o->azimuth ), ftofix(scale));
+            rotate_scaled_sprite(buf, rock, o->p.x - (rock->w >> 1)*scale,
+                                          -(o->p.y + (rock->h >> 1)*scale) + WORLD_H, RAD2FIX( o->azimuth ), ftofix(scale));
             break;
 
         case EXPLOSION:
             scale = o->radius/12;
-            rotate_scaled_sprite(buf, explode, o->px - (explode->w >> 1)*scale,
-                                             -(o->py + (explode->h >> 1)*scale) + WORLD_H, RAD2FIX( o->azimuth ), ftofix(scale));
+            rotate_scaled_sprite(buf, explode, o->p.x - (explode->w >> 1)*scale,
+                                             -(o->p.y + (explode->h >> 1)*scale) + WORLD_H, RAD2FIX( o->azimuth ), ftofix(scale));
             break;
 
         case SOUND:
@@ -138,33 +138,33 @@ void render(objectPtr o)
 
     if (bmp != NULL)
     {
-        rotate_sprite(buf, bmp, o->px - (bmp->w >> 1),
-                              -(o->py + (bmp->h >> 1)) + WORLD_H, RAD2FIX( o->azimuth ));
+        rotate_sprite(buf, bmp, o->p.x - (bmp->w >> 1),
+                              -(o->p.y + (bmp->h >> 1)) + WORLD_H, RAD2FIX( o->azimuth ));
     }
     else if (sample != NULL)
     {
-        play_sample(sample, 64, PAN(o->px), 1000, 0);
+        play_sample(sample, 64, PAN(o->p.x), 1000, 0);
     }
 
     if (DEBUG)
     {
         // collision hull/health
-        circle(buf, o->px, WORLD_H - o->py, o->radius, red);
+        circle(buf, o->p.x, WORLD_H - o->p.y, o->radius, red);
         double percentHealth = double(o->health)/o->maxHealth/2;
-        arc(buf, o->px, WORLD_H - o->py, itofix((-255*percentHealth)-64), itofix(255*percentHealth-64), o->radius, green);
+        arc(buf, o->p.x, WORLD_H - o->p.y, itofix((-255*percentHealth)-64), itofix(255*percentHealth-64), o->radius, green);
 
         // velocity indicator
-        line(buf, o->px, WORLD_H - o->py, o->px + o->vx * 10, WORLD_H - (o->py + o->vy * 10), blue);
+        line(buf, o->p.x, WORLD_H - o->p.y, o->p.x + o->v.x * 10, WORLD_H - (o->p.y + o->v.y * 10), blue);
 
         // bearing indicator
-        circle(buf, o->px + cos(o->azimuth) * (o->radius-1),
-                  -(o->py + sin(o->azimuth) * (o->radius-1)) + WORLD_H, 1, white);
+        circle(buf, o->p.x + cos(o->azimuth) * (o->radius-1),
+                  -(o->p.y + sin(o->azimuth) * (o->radius-1)) + WORLD_H, 1, white);
 
         // center
-        circle(buf, o->px, WORLD_H - o->py, 1, white);
+        circle(buf, o->p.x, WORLD_H - o->p.y, 1, white);
 
         // object id
-        // textprintf_ex(buf, font, (o->px + o->radius), WORLD_H - (o->py - o->radius), white, -1, "%X", o->id);
+        // textprintf_ex(buf, font, (o->p.x + o->radius), WORLD_H - (o->p.y - o->radius), white, -1, "%X", o->id);
     }
 }
 
@@ -413,7 +413,7 @@ int main()
         stretch_blit(buf, screen, 0, 0, WORLD_W, WORLD_H, 0, 0, SCREEN_W, SCREEN_H);
         if (objectPtr Ship2 = Ship2Weak.lock())
         {
-            Ship2->ShowStats(screen);
+            Ship2->ShowStats(screen, Ship1Weak.lock().get());
         }
     }
 

@@ -32,20 +32,20 @@ Rock::Rock(Rock *parent): CObject(ROCK, parent)
 
     if (parent != NULL)
     {
-        double rndh = randf() * 2 * M_PI;
-        px += cos(rndh) * (parent->radius/2);
-        py += sin(rndh) * (parent->radius/2);
+        double rndHeading = randf() * 2 * M_PI;
+        p.x += cos(rndHeading) * (parent->radius/2);
+        p.y += sin(rndHeading) * (parent->radius/2);
+	
+        parent->p.x -= cos(rndHeading) * (radius/2);
+        parent->p.y -= sin(rndHeading) * (radius/2);
 
-        parent->px -= cos(rndh) * (radius/2);
-        parent->py -= sin(rndh) * (radius/2);
-
-        rndh = randf() * 2 * M_PI;
+        rndHeading = randf() * 2 * M_PI;
         double rndSpeed = randf();
-        vx += cos(rndh) * (rndSpeed);
-        vy += sin(rndh) * (rndSpeed);
+        v.x += cos(rndHeading) * (rndSpeed);
+        v.y += sin(rndHeading) * (rndSpeed);
 
-        parent->vx -= cos(rndh) * (rndSpeed);
-        parent->vy -= sin(rndh) * (rndSpeed);
+        parent->v.x -= cos(rndHeading) * (rndSpeed);
+        parent->v.y -= sin(rndHeading) * (rndSpeed);
     }
 }
 

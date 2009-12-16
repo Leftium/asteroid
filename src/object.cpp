@@ -37,11 +37,50 @@ bool CObject::update()
     return false;
 }
 
-// ISCOLLISION //////////////////////////////////////////////////////////////////
-bool CObject::isCollision(CObject *p1, CObject *p2)
+void CObject::resolveCollision(CObject *obj1, CObject *obj2, vector2f n)
 {
-    return ( ( squareDistance(p1->px, p1->py, p2->px, p2->py ) ) <
-             ( pow(p1->radius + p2->radius, 2) ) );
+    // n is the normal vector to the collision
+    double   r  = obj1->m / obj2->m;
+    vector2f u  = obj1->v;
+    vector2f un = obj1->v.projected(n);
+    vector2f ut = u - un;
+    vector2f vn = un * (r-1)/(r+1);
+    vector2f wn = un * 2 * r / (r+1);
+
+    obj1->v = ut + vn + obj2->v;
+    obj2->v = wn;
+}
+
+// return time to collision
+double CObject::circleCircleCollision(CObject *cir1, CObject *cir2)
+{
+    vector2f w = cir1->p - cir2->p;
+    double   r = cir1->radius + cir2->radius;
+    double   ww = w*w;
+
+    if (ww < r*r)
+    {
+        // objects already overlap; ignore
+        return 666;
+    }
+
+    vector2f v = cir1->v - cir2->v;
+
+    double a = v*v + DBL_MIN;
+    double b = w*v;
+    double c = ww - r*r;
+
+    double root = b*b - a*c;
+
+    if (root < 0)
+    {
+        // objects not on collision course
+        return 999;
+    }
+
+    double t = (-b - sqrt(root)) / a;
+
+    return t;
 }
 
 bool CObject::handleCollision(CObject *p, CObject *q)
@@ -54,105 +93,48 @@ bool CObject::handleCollision(CObject *p, CObject *q)
     }
     else
     {
-        // check if on collision course
-        double h, j, k, l, d, a, b, c, discriminantSquared;
+        double t = circleCircleCollision(p, q);
 
-        h = q->px - p->px;  // relative x location
-        j = q->vx - p->vx;  // relative x velocity
-        k = q->py - p->py;  // relative y location
-        l = q->vy - p->vy;  // relative y velocity
-        d = q->radius + p->radius;
-
-        a = j*j + l*l + DBL_MIN;
-        b = 2 * (h*j + k*l);
-        c = h*h + k*k - d*d;
-
-        discriminantSquared = b*b - 4*a*c;
-
-        if (discriminantSquared < 0)
+        if (t < 0 || t > 1)
         {
+            // collision not in this time frame
             return false;
         }
-        else
+
+        bool doPhysicsP = (p->collidesWith(q) & PHYSICS_SELF) ||
+            (q->collidesWith(p) & PHYSICS_TARGET);
+        bool doPhysicsQ = (q->collidesWith(p) & PHYSICS_SELF) ||
+            (p->collidesWith(q) & PHYSICS_TARGET);
+
+        if (doPhysicsP || doPhysicsQ)
         {
-            // determine time of collision
-            double t  = 999;
+            // move objects to point of collision
+            p->p += p->v * t;
+            q->p += q->v * t;
 
-            if (!isCollision(p, q))
-            {
-                t = (-b - sqrt(discriminantSquared)) / (2*a);
-            }
+            // find point of collision & normal
+            vector2f collisionNormal = q->p - p->p; 
 
-            if (t >= 0 && t <= 1)
-            {
-                bool doPhysicsP = (p->collidesWith(q) & PHYSICS_SELF) ||
-                                  (q->collidesWith(p) & PHYSICS_TARGET);
-                bool doPhysicsQ = (q->collidesWith(p) & PHYSICS_SELF) ||
-                                  (p->collidesWith(q) & PHYSICS_TARGET);
-
-                if (doPhysicsP || doPhysicsQ)
-                {
-                    // calculate physics for elastic collision
-                    double vxpf = p->vx;
-                    double vypf = p->vy;
-
-                    double vxqf = q->vx;
-                    double vyqf = q->vy;
-
-                    elasticCollide(vxpf, p->m, vxqf, q->m);
-                    elasticCollide(vypf, p->m, vyqf, q->m);
-
-                    if (doPhysicsP)
-                    {
-                        // place at point of collision
-                        p->px += t * p->vx;
-                        p->py += t * p->vy;
-
-                        // adjust velocity
-                        p->vx = vxpf;
-                        p->vy = vypf;
-
-                        // move ships ships after collision
-                        p->px += -t * p->vx;
-                        p->py += -t * p->vy;
-                        p->wrapPosition();
-                    }
-
-                    if (doPhysicsQ)
-                    {
-                        // place at point of collision
-                        q->px += t * q->vx;
-                        q->py += t * q->vy;
-
-                        // adjust velocity
-                        q->vx = vxqf;
-                        q->vy = vyqf;
-
-                        // move ships ships after collision
-                        q->px += -t * q->vx;
-                        q->py += -t * q->vy;
-                        q->wrapPosition();
-                    }
-                }
-
-                // do final collision logic
-                bool doLogicP = (p->collidesWith(q) & LOGIC_SELF) ||
-                                (q->collidesWith(p) & LOGIC_TARGET);
-                bool doLogicQ = (q->collidesWith(p) & LOGIC_SELF) ||
-                                (p->collidesWith(q) & LOGIC_TARGET);
-
-                if (doLogicP)
-                {
-                    p->bumpedInto(q);
-                }
-
-                if (doLogicQ)
-                {
-                    q->bumpedInto(p);
-                }
-                objects.push_back(objectPtr(new Sound(BOOM, (p->px + q->px) / 2, (p->py + q->py) / 2 )));
-            }
+            // resolve collision
+            resolveCollision(q, p, collisionNormal);
         }
+
+        // do final collision logic
+        bool doLogicP = (p->collidesWith(q) & LOGIC_SELF) ||
+                        (q->collidesWith(p) & LOGIC_TARGET);
+        bool doLogicQ = (q->collidesWith(p) & LOGIC_SELF) ||
+                        (p->collidesWith(q) & LOGIC_TARGET);
+
+        if (doLogicP)
+        {
+            p->bumpedInto(q);
+        }
+
+        if (doLogicQ)
+        {
+            q->bumpedInto(p);
+        }
+        objects.push_back(objectPtr(new Sound(BOOM, (p->p.x + q->p.x) / 2, (p->p.y + q->p.y) / 2 )));
     }
     return true;
 }
@@ -166,8 +148,8 @@ CObject::CObject(ObjectType _type, CObject *parent)
     double randomBearing = randf()*2*M_PI;
 
     id = currentId++;
-    fx = 0;
-    fy = 0;
+    f.x = 0;
+    f.y = 0;
 
     if (parent != NULL)
     {
@@ -196,7 +178,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
             }
             else
             {
-                setEverything( _type, parent->px, parent->py, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing, parent->m);
+                setEverything( _type, parent->p.x, parent->p.y, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing, parent->m);
             }
             break;
 
@@ -216,7 +198,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
         default:
             if (parent != NULL)
             {
-                setEverything( _type, parent->px, parent->py, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing, parent->m);
+                setEverything( _type, parent->p.x, parent->p.y, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing, parent->m);
             }
             else
             {
@@ -239,12 +221,12 @@ void CObject::setEverything(
         double _mass)
 {
     type_   = _type;
-    px      = _px;
-    py      = _py;
+    p.x = _px;
+    p.y = _py;
     radius  = _radius;
     health = _health;
-    vx      = cos(_heading) * _speed;
-    vy      = sin(_heading) * _speed;
+    v.x     = cos(_heading) * _speed;
+    v.y     = sin(_heading) * _speed;
     bearing = _bearing;
     m       = _mass;
 }
@@ -252,39 +234,28 @@ void CObject::setEverything(
 
 void CObject::addForce(double magnitude, double angle)
 {
-    fx = cos(angle) * magnitude;
-    fy = sin(angle) * magnitude;
+    f.x = cos(angle) * magnitude;
+    f.y = sin(angle) * magnitude;
 }
 
 // apply net force and convert to delta velocity
 void CObject::applyForces()
 {
-    // add velocity from impulse
-    vx += fx / m;
-    vy += fy / m;
-
-    // apply some friction
-    vx *= 0.995;
-    vy *= 0.995;
-
-    // reset net force
-    fx = 0;
-    fy = 0;
-
-    // update position
-    px += vx;
-    py += vy;
+    v += f/m;   // add velocity from impulse
+    v *= 0.995; // apply some friction
+    f(0,0);     // reset net force
+    p += v;     // update position
 
     wrapPosition();
 }
 
 void CObject::wrapPosition()
 {
-    if (px < 0) px += MAX_X;
-    if (py < 0) py += MAX_Y;
+    if (p.x < 0) p.x += MAX_X;
+    if (p.y < 0) p.y += MAX_Y;
 
-    if (px > MAX_X) px -= MAX_X;
-    if (py > MAX_Y) py -= MAX_Y;
+    if (p.x > MAX_X) p.x -= MAX_X;
+    if (p.y > MAX_Y) p.y -= MAX_Y;
 }
 
 void CObject::Rotate(double angle)
@@ -312,7 +283,7 @@ void CObject::bumpedInto(CObject *o)
     health -= o->radius;
 }
 
-void CObject::ShowStats(BITMAP *pDest)
+void CObject::ShowStats(BITMAP *pDest, CObject *obj)
 {
     const int white = makecol(255, 255, 255);
     const int red   = makecol(255,   0,   0);
@@ -321,11 +292,16 @@ void CObject::ShowStats(BITMAP *pDest)
 
     int y = 1;
 
-    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     x:% 010.5f", px);
-    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     y:% 010.5f", py);
+    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     x:% 010.5f", p.x);
+    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     y:% 010.5f", p.y);
     y++;
     textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     b:% 010.5f", azimuth);
     textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     H:% 010.5f", heading);
     y++;
     textprintf_ex(pDest, font, 0, 10*y++, blue, -1, " speed:% 010.5f", speed);
+
+    if (obj != NULL)
+    {
+        textprintf_ex(pDest, font, 0, 10*y++, red, -1, " speed:% 010.5f", CObject::circleCircleCollision(this, obj));
+    }
 }

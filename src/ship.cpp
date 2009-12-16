@@ -5,8 +5,8 @@
 
 Ship::Ship(double x, double y, int team, double _bearing, int _health): CObject(SHIP)
 {
-    px      = x;
-    py      = y;
+    p.x     = x;
+    p.y     = y;
     team_   = team;
     bearing = _bearing;
     health  = _health;
@@ -78,7 +78,7 @@ void Ship::fire()
     if (energy_ > 200 && reloadTime_ == 0)
     {
         objects.push_back(objectPtr(new Shot(this)));
-        objects.push_back(objectPtr(new Sound(SHOOT, px, py)));
+        objects.push_back(objectPtr(new Sound(SHOOT, p.x, p.y)));
 
         energy_     = MAX(energy_ - 20, 0);
         reloadTime_ = 12;

@@ -37,13 +37,13 @@ class CObject
 protected:
     ObjectType type_;
 
-    int    id;        // uniquely identifies object
-    double px, py;    // position
-    double vx, vy;    // velocity
-    double fx, fy;    // net force on object
-    double m;         // mass of object
-    double azimuth;   // direction object is facing
-    double radius;    // Radius of object
+    int      id;      // uniquely identifies object
+    vector2f p;       // position
+    vector2f v;       // velocity
+    vector2f f;       // net force on object
+    double   m;       // mass of object
+    double   azimuth; // direction object is facing
+    double   radius;  // Radius of object
 
     // TODO: refactor into subclasses?
     int    health;    // Amount of hits left
@@ -56,12 +56,14 @@ protected:
     void setEverything(ObjectType _type, double _px, double _py, double _speed, double _radius, int _health, double _heading, double _bearing, double mass=100);
     static void elasticCollide(double &v1, double m1, double &v2, double m2);
 
+    static void CObject::resolveCollision(CObject *obj1, CObject *obj2, vector2f n);
+
 public:
     // TODO: move clipping logic outside of object class
     static const int MAX_X = 320;
     static const int MAX_Y = 240;
 
-    static bool isCollision(CObject *p1, CObject *p2);
+    static double CObject::circleCircleCollision(CObject *cir1, CObject *cir2);
     static bool CObject::handleCollision(CObject *p, CObject *q);
 
     virtual CollisionFlags collidesWith(CObject *o);
@@ -80,13 +82,13 @@ public:
     void Rotate(double angle);
 
     // TODO: Move debugging outside of object class?
-    void ShowStats(BITMAP *pDest);
+    void CObject::ShowStats(BITMAP *pDest, CObject *obj);
 
     __declspec ( property ( get=getspeed ) ) double speed;
-    double getspeed() { return sqrt(squareDistance(0, 0, vx, vy)); }
+    double getspeed() { return v.length(); }
 
     __declspec ( property ( get=getheading ) ) double heading;
-    double getheading() { return relativeAngle(0, 0, vx, vy); }
+    double getheading() { return relativeAngle(0, 0, v.x, v.y); }
 
     __declspec ( property ( get=getbearing, put=setbearing ) ) double bearing;
     double getbearing() { return azimuth; }
@@ -112,3 +114,4 @@ public:
 
 extern std::list< objectPtr > objects;
 extern BITMAP *buf;
+
