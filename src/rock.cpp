@@ -51,8 +51,7 @@ Rock::Rock(Rock *parent): CObject(ROCK, parent)
 
 CollisionFlags Rock::collidesWith(CObject *o)
 {
-  if ((o->type == SHIP && o->team != team) ||
-      (o->type == ROCK))
+  if (o->type == SHIP || o->type == ROCK || o->type == SHOT)
   {
       return ALL;
   }
@@ -78,24 +77,10 @@ bool Rock::update()
     }
 }
 
-void Rock::bumpedInto(CObject *o)
+void Rock::bumpedInto(CObject *o, vector2f v_delta)
 {
-    switch(o->type)
-    {
-        case SHOT:
-            health -= 20;
-            Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-            break;
-
-        case ROCK:
-        case SHIP:
-            CObject::bumpedInto(o);
-            Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-            break;
-
-        default:
-            break;
-    }
+    CObject::bumpedInto(o, v_delta);
+    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
 
     if (m > 16)
     {

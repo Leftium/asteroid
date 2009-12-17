@@ -21,7 +21,7 @@ public:
 
     virtual CollisionFlags collidesWith(CObject *o);
     virtual bool update();
-    virtual void bumpedInto(CObject *o);
+    virtual void bumpedInto(CObject *o, vector2f v_delta);
 
     __declspec ( property ( get=getenergy ) ) int energy;
     int getenergy() { return energy_; }

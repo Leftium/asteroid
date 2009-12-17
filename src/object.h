@@ -71,7 +71,7 @@ public:
     virtual bool update();
     void addForce(double magnitude, double angle);
     void applyForces();
-    virtual void bumpedInto(CObject *o);
+    virtual void bumpedInto(CObject *o, vector2f v_delta);
 
     // constructors
     CObject::CObject(ObjectType _type=GENERIC, CObject *parent=NULL);

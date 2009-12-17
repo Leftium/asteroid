@@ -52,26 +52,10 @@ bool Ship::update()
     return false;
 }
 
-void Ship::bumpedInto(CObject *o)
+void Ship::bumpedInto(CObject *o, vector2f v_delta)
 {
-    switch(o->type)
-    {
-        case SHOT:
-            health -= 5;
-            Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-
-            break;
-
-        case SHIP:
-        case ROCK:
-            CObject::bumpedInto(o);
-            Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
-            break;
-
-        default:
-            break;
-    }
-    return;
+    CObject::bumpedInto(o, v_delta);
+    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
 }
 
 void Ship::fire()

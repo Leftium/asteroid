@@ -38,7 +38,7 @@ bool Shot::update()
     }
 }
 
-void Shot::bumpedInto(CObject *o)
+void Shot::bumpedInto(CObject *o, vector2f v_delta)
 {
     health = 0;
     objects.push_back(objectPtr(new Flash(this)));

@@ -10,5 +10,5 @@ public:
 
     virtual CollisionFlags collidesWith(CObject *o);
     virtual bool update();
-    virtual void bumpedInto(CObject *o);
+    virtual void bumpedInto(CObject *o, vector2f v_delta);
 };

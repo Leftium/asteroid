@@ -37,18 +37,18 @@ bool CObject::update()
     return false;
 }
 
-void CObject::resolveCollision(CObject *obj1, CObject *obj2, vector2f n)
+void CObject::resolveCollision(CObject *obj2, CObject *obj1, vector2f n)
 {
     // n is the normal vector to the collision
     double   r  = obj1->m / obj2->m;
-    vector2f u  = obj1->v;
-    vector2f un = obj1->v.projected(n);
+    vector2f u  = obj1->v - obj2->v;
+    vector2f un = u.projected(n);
     vector2f ut = u - un;
     vector2f vn = un * (r-1)/(r+1);
     vector2f wn = un * 2 * r / (r+1);
 
     obj1->v = ut + vn + obj2->v;
-    obj2->v = wn;
+    obj2->v = wn +      obj2->v;
 }
 
 // return time to collision
@@ -91,51 +91,53 @@ bool CObject::handleCollision(CObject *p, CObject *q)
     {
         return false;
     }
-    else
+
+    double t = circleCircleCollision(p, q);
+    if (t < 0 || t > 1)
     {
-        double t = circleCircleCollision(p, q);
-
-        if (t < 0 || t > 1)
-        {
-            // collision not in this time frame
-            return false;
-        }
-
-        bool doPhysicsP = (p->collidesWith(q) & PHYSICS_SELF) ||
-            (q->collidesWith(p) & PHYSICS_TARGET);
-        bool doPhysicsQ = (q->collidesWith(p) & PHYSICS_SELF) ||
-            (p->collidesWith(q) & PHYSICS_TARGET);
-
-        if (doPhysicsP || doPhysicsQ)
-        {
-            // move objects to point of collision
-            p->p += p->v * t;
-            q->p += q->v * t;
-
-            // find point of collision & normal
-            vector2f collisionNormal = q->p - p->p; 
-
-            // resolve collision
-            resolveCollision(q, p, collisionNormal);
-        }
-
-        // do final collision logic
-        bool doLogicP = (p->collidesWith(q) & LOGIC_SELF) ||
-                        (q->collidesWith(p) & LOGIC_TARGET);
-        bool doLogicQ = (q->collidesWith(p) & LOGIC_SELF) ||
-                        (p->collidesWith(q) & LOGIC_TARGET);
-
-        if (doLogicP)
-        {
-            p->bumpedInto(q);
-        }
-
-        if (doLogicQ)
-        {
-            q->bumpedInto(p);
-        }
-        objects.push_back(objectPtr(new Sound(BOOM, (p->p.x + q->p.x) / 2, (p->p.y + q->p.y) / 2 )));
+        // collision not in this time frame
+        return false;
     }
+
+    bool doPhysicsP = (p->collidesWith(q) & PHYSICS_SELF) ||
+        (q->collidesWith(p) & PHYSICS_TARGET);
+    bool doPhysicsQ = (q->collidesWith(p) & PHYSICS_SELF) ||
+        (p->collidesWith(q) & PHYSICS_TARGET);
+
+    vector2f pv_delta = p->v;
+    vector2f qv_delta = q->v;
+
+    if (doPhysicsP || doPhysicsQ)
+    {
+        // move objects to point of collision
+        p->p += p->v * t;
+        q->p += q->v * t;
+
+        // find point of collision & normal
+        vector2f collisionNormal = q->p - p->p;
+
+        // resolve collision
+        resolveCollision(q, p, collisionNormal);
+    }
+    pv_delta = p->v - pv_delta;
+    qv_delta = q->v - qv_delta;
+
+    // do final collision logic
+    bool doLogicP = (p->collidesWith(q) & LOGIC_SELF) ||
+        (q->collidesWith(p) & LOGIC_TARGET);
+    bool doLogicQ = (q->collidesWith(p) & LOGIC_SELF) ||
+        (p->collidesWith(q) & LOGIC_TARGET);
+
+    if (doLogicP)
+    {
+        p->bumpedInto(q, pv_delta);
+    }
+
+    if (doLogicQ)
+    {
+        q->bumpedInto(p, qv_delta);
+    }
+    objects.push_back(objectPtr(new Sound(BOOM, (p->p.x + q->p.x) / 2, (p->p.y + q->p.y) / 2 )));
     return true;
 }
 
@@ -263,10 +265,19 @@ void CObject::Rotate(double angle)
     bearing += angle;
 }
 
-void CObject::bumpedInto(CObject *o)
+void CObject::bumpedInto(CObject *o, vector2f v_delta)
 {
     // use this in derived classes to get radius-based damage
-    health -= o->radius;
+    double damage = v_delta.length() * sqrt(o->radius);
+
+    // give bonus damage to SHOT vs ROCK
+    // otherwise SHOT too ineffective vs ROCK
+    if (type == ROCK && o->type == SHOT)
+    {
+        damage *= 100;
+    }
+
+    health -= damage;
 }
 
 void CObject::ShowStats(BITMAP *pDest, CObject *obj)
