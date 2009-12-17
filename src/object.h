@@ -54,7 +54,6 @@ protected:
 
     void wrapPosition();
     void setEverything(ObjectType _type, double _px, double _py, double _speed, double _radius, int _health, double _heading, double _bearing, double mass=100);
-    static void elasticCollide(double &v1, double m1, double &v2, double m2);
 
     static void CObject::resolveCollision(CObject *obj1, CObject *obj2, vector2f n);
 

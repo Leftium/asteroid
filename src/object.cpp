@@ -263,20 +263,6 @@ void CObject::Rotate(double angle)
     bearing += angle;
 }
 
-// TODO: fix elastic collision so collision point is accounted for in final velecities
-// Compute final velocities after elastic collision
-// Results returned via reference variables holding initial velocities
-// Based on: http://farside.ph.utexas.edu/teaching/301/lectures/node76.html
-void CObject::elasticCollide(double &v1, double m1, double &v2, double m2)
-{
-   double v1f;
-
-   v1f = ((m1 - m2) / (m1 + m2) * v1) + ((2 * m2) / (m1 + m2)  * v2);
-   v2  = ((2 * m1) / (m1 + m2)  * v1) + ((m1 - m2) / (m1 + m2) * v2);
-
-   v1 = v1f;
-}
-
 void CObject::bumpedInto(CObject *o)
 {
     // use this in derived classes to get radius-based damage
