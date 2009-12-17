@@ -12,6 +12,7 @@ Ship::Ship(double x, double y, int team, double _bearing, int _health): CObject(
     health  = _health;
     radius  = 10;
     m       = 100;
+    maxHealth = 100;
 
     energy_     = 1000;
     reloadTime_ = 0;

@@ -150,8 +150,8 @@ void render(objectPtr o)
     {
         // collision hull/health
         circle(buf, o->p.x, WORLD_H - o->p.y, o->radius, red);
-        double percentHealth = double(o->health)/o->maxHealth/2;
-        arc(buf, o->p.x, WORLD_H - o->p.y, itofix((-255*percentHealth)-64), itofix(255*percentHealth-64), o->radius, green);
+        int arcLength = 255 * double(o->health)/o->maxHealth/2;
+        arc(buf, o->p.x, WORLD_H - o->p.y, itofix(-64 - arcLength), itofix(-64 + arcLength), o->radius, green);
 
         // velocity indicator
         line(buf, o->p.x, WORLD_H - o->p.y, o->p.x + o->v.x * 10, WORLD_H - (o->p.y + o->v.y * 10), blue);
@@ -293,11 +293,11 @@ int main()
     // create objects ///////////////////////////////////////////////////////
     objects.push_back(objectPtr(new Starfield()));
 
-    objects.push_back(objectPtr(new Ship(80, 100, 1, 0, 75)));
+    objects.push_back(objectPtr(new Ship(80, 100, 1, 0, 100)));
     ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.back());
     objects.push_back(objectPtr(new kinput(objects.back(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H) ));
 
-    objects.push_back(objectPtr(new Ship(220, 100, 2, M_PI, 75)));
+    objects.push_back(objectPtr(new Ship(220, 100, 2, M_PI, 100)));
     ShipPtrWeak Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.back());
     objects.push_back(objectPtr(new kinput(objects.back(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE) ));
 
