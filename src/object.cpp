@@ -288,6 +288,6 @@ void CObject::ShowStats(BITMAP *pDest, CObject *obj)
 
     if (obj != NULL)
     {
-        textprintf_ex(pDest, font, 0, 10*y++, red, -1, " speed:% 010.5f", CObject::circleCircleCollision(this, obj));
+        textprintf_ex(pDest, font, 0, 10*y++, red, -1, "   TtC:% 010.5f", CObject::circleCircleCollision(this, obj));
     }
 }
