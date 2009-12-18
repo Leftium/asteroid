@@ -57,6 +57,9 @@ void render(objectPtr o)
     int c;
 
     double scale = 0;
+
+    o->wrapPosition();
+
     switch (o->type)
     {
         case STARFIELD:
@@ -422,11 +425,13 @@ int main()
         }
 
         vsync();
+        acquire_screen();
         stretch_blit(buf, screen, 0, 0, WORLD_W, WORLD_H, 0, 0, SCREEN_W, SCREEN_H);
         if (objectPtr Ship2 = Ship2Weak.lock())
         {
             Ship2->ShowStats(screen, Ship1Weak.lock().get());
         }
+        release_screen();
     }
 
     allegro_exit();

@@ -7,6 +7,8 @@
 #include "flash.h"
 #include "text.h"
 
+bool SHOW_DAMAGE = true;
+
 CollisionFlags CObject::collidesWith(CObject *o)
 {
     return NONE;
@@ -251,17 +253,15 @@ void CObject::applyForces()
     v *= 0.995; // apply some friction
     f(0,0);     // reset net force
     p += v;     // update position
-
-    wrapPosition();
 }
 
 void CObject::wrapPosition()
 {
-    if (p.x < 0) p.x += MAX_X;
-    if (p.y < 0) p.y += MAX_Y;
+    while (p.x < 0) p.x += MAX_X;
+    while (p.y < 0) p.y += MAX_Y;
 
-    if (p.x > MAX_X) p.x -= MAX_X;
-    if (p.y > MAX_Y) p.y -= MAX_Y;
+    while (p.x > MAX_X) p.x -= MAX_X;
+    while (p.y > MAX_Y) p.y -= MAX_Y;
 }
 
 void CObject::Rotate(double angle)
@@ -286,7 +286,10 @@ void CObject::bumpedInto(CObject *o, vector2f v_delta)
     std::stringstream ss;
     ss << int(damage);
 
-    objects.push_back(objectPtr( new Text(p.x, p.y, ss.str(), this)));
+    if (SHOW_DAMAGE)
+    {
+        objects.push_back(objectPtr( new Text(p.x, p.y, ss.str(), this)));
+    }
 }
 
 void CObject::ShowStats(BITMAP *pDest, CObject *obj)
