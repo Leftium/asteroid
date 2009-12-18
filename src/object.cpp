@@ -1,7 +1,11 @@
+#include <string>
+#include <sstream>
+
 #include "object.h"
 #include "sound.h"
 #include "explosion.h"
 #include "flash.h"
+#include "text.h"
 
 CollisionFlags CObject::collidesWith(CObject *o)
 {
@@ -278,6 +282,11 @@ void CObject::bumpedInto(CObject *o, vector2f v_delta)
     }
 
     health -= damage;
+
+    std::stringstream ss;
+    ss << int(damage);
+
+    objects.push_back(objectPtr( new Text(p.x, p.y, ss.str(), this)));
 }
 
 void CObject::ShowStats(BITMAP *pDest, CObject *obj)

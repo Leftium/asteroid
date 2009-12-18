@@ -29,7 +29,7 @@ enum CollisionFlags
     ONLY_TARGET    =                PHYSICS_TARGET |              LOGIC_TARGET
 };
 
-enum ObjectType { GENERIC, SHIP, SHOT, ROCK, EXPLOSION, SOUND, STARFIELD, FLASH};
+enum ObjectType { GENERIC, SHIP, SHOT, ROCK, EXPLOSION, SOUND, STARFIELD, FLASH, TEXT};
 
 
 class CObject

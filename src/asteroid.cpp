@@ -10,6 +10,7 @@
 #include "sound.h"
 #include "starfield.h"
 #include "rock.h"
+#include "text.h"
 
 #include <list>
 #include <memory>
@@ -51,6 +52,9 @@ void render(objectPtr o)
     SoundPtr sound;
     ShipPtr s;
     StarfieldPtr starfield;
+    TextPtr text;
+
+    int c;
 
     double scale = 0;
     switch (o->type)
@@ -132,6 +136,14 @@ void render(objectPtr o)
             }
             break;
 
+        case TEXT:
+            text = std::tr1::dynamic_pointer_cast<Text>(o);
+            c = 128 * text->health/text->maxHealth + 128;
+            c = makecol(c, 0, 0);
+            textprintf_ex(buf, font, text->p.x, WORLD_H - text->p.y, c, -1, "%s", text->message.c_str());
+
+            break;
+
         default:
             break;
     }
@@ -146,7 +158,7 @@ void render(objectPtr o)
         play_sample(sample, 64, PAN(o->p.x), 1000, 0);
     }
 
-    if (DEBUG)
+    if (DEBUG && o->radius > 0)
     {
         // collision hull/health
         circle(buf, o->p.x, WORLD_H - o->p.y, o->radius, red);
