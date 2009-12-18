@@ -105,13 +105,11 @@ bool CObject::handleCollision(CObject *p, CObject *q)
         return false;
     }
 
-    bool doPhysicsP = (p->collidesWith(q) & PHYSICS_SELF) ||
-        (q->collidesWith(p) & PHYSICS_TARGET);
-    bool doPhysicsQ = (q->collidesWith(p) & PHYSICS_SELF) ||
-        (p->collidesWith(q) & PHYSICS_TARGET);
+    bool doPhysicsP = (p->collidesWith(q) & PHYSICS_TAKE);
+    bool doPhysicsQ = (q->collidesWith(p) & PHYSICS_TAKE);
 
-    vector2f pv_delta = p->v;
-    vector2f qv_delta = q->v;
+    vector2f pv_orig = p->v;
+    vector2f qv_orig = q->v;
 
     if (doPhysicsP || doPhysicsQ)
     {
@@ -125,23 +123,28 @@ bool CObject::handleCollision(CObject *p, CObject *q)
         // resolve collision
         resolveCollision(q, p, collisionNormal);
     }
-    pv_delta = p->v - pv_delta;
-    qv_delta = q->v - qv_delta;
+
+    if (!doPhysicsP)
+    {
+        p->v = pv_orig;
+    }
+    if (!doPhysicsQ)
+    {
+        q->v = qv_orig;
+    }
 
     // do final collision logic
-    bool doLogicP = (p->collidesWith(q) & LOGIC_SELF) ||
-        (q->collidesWith(p) & LOGIC_TARGET);
-    bool doLogicQ = (q->collidesWith(p) & LOGIC_SELF) ||
-        (p->collidesWith(q) & LOGIC_TARGET);
+    bool doLogicP = (p->collidesWith(q) & LOGIC_TAKE);
+    bool doLogicQ = (q->collidesWith(p) & LOGIC_TAKE);
 
     if (doLogicP)
     {
-        p->bumpedInto(q, pv_delta);
+        p->bumpedInto(q, p->v - pv_orig);
     }
 
     if (doLogicQ)
     {
-        q->bumpedInto(p, qv_delta);
+        q->bumpedInto(p, q->v - qv_orig);
     }
     objects.push_back(objectPtr(new Sound(BOOM, (p->p.x + q->p.x) / 2, (p->p.y + q->p.y) / 2 )));
     return true;

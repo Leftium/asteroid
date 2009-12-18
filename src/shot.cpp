@@ -15,7 +15,7 @@ CollisionFlags Shot::collidesWith(CObject *o)
   if ((o->type == SHIP && o->team != team) ||
       (o->type == ROCK))
   {
-      return ALL;
+      return CollisionFlags(PHYSICS_GIVE | LOGIC_TAKE);
   }
   else
   {

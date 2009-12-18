@@ -20,13 +20,13 @@ typedef std::list<objectPtrWeak>::iterator objectIterWeak;
 enum CollisionFlags
 {
     NONE           = 0,
-    PHYSICS_SELF   = 1,
-    PHYSICS_TARGET = 2,
-    LOGIC_SELF     = 4,
-    LOGIC_TARGET   = 8,
-    ALL            = PHYSICS_SELF | PHYSICS_TARGET | LOGIC_SELF | LOGIC_TARGET,
-    ONLY_SELF      = PHYSICS_SELF                  | LOGIC_SELF,
-    ONLY_TARGET    =                PHYSICS_TARGET |              LOGIC_TARGET
+    PHYSICS_TAKE   = 1,
+    PHYSICS_GIVE   = 2,
+    LOGIC_GIVE     = 4,
+    LOGIC_TAKE     = 8,
+    ALL            = PHYSICS_TAKE | PHYSICS_GIVE | LOGIC_TAKE | LOGIC_GIVE,
+    ONLY_SELF      = PHYSICS_TAKE                | LOGIC_TAKE,
+    ONLY_TARGET    =                PHYSICS_GIVE |              LOGIC_GIVE
 };
 
 enum ObjectType { GENERIC, SHIP, SHOT, ROCK, EXPLOSION, SOUND, STARFIELD, FLASH, TEXT};
