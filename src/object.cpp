@@ -134,8 +134,8 @@ bool CObject::handleCollision(CObject *p, CObject *q)
     }
 
     // do final collision logic
-    bool doLogicP = (p->collidesWith(q) & LOGIC_TAKE);
-    bool doLogicQ = (q->collidesWith(p) & LOGIC_TAKE);
+    bool doLogicP = (p->collidesWith(q) & LOGIC_TAKE) != 0;
+    bool doLogicQ = (q->collidesWith(p) & LOGIC_TAKE) != 0;
 
     if (doLogicP)
     {
