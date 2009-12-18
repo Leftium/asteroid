@@ -65,7 +65,6 @@ bool Rock::update()
 {
     if (health > 0)
     {
-        Rotate(1 * FIX_PER_RAD);
         applyForces();
         return false;
     }
@@ -80,7 +79,6 @@ bool Rock::update()
 void Rock::bumpedInto(CObject *o, vector2f v_delta)
 {
     CObject::bumpedInto(o, v_delta);
-    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
 
     if (m > 16)
     {

@@ -29,7 +29,6 @@ bool Shot::update()
     if (health-- > 0)
     {
         applyForces();
-        Rotate(6 * FIX_PER_RAD);
         return false;
     }
     else

@@ -183,4 +183,16 @@ struct vector2f: public vector2<double>
     //! computes the angle between 2 normalized arbitrary vectors
     static inline double angle_normalized(const vector2f &v1, const vector2f &v2)
     { return acosf(v1*v2); }
+
+    //! clockwiseNormal
+    vector2f clockwiseNormal()
+    {
+        return vector2f(y, -x);
+    }
+
+    //! clockwise
+    double clockwise(const vector2f &v)
+    {
+        return (v * this->clockwiseNormal());
+    }
 };

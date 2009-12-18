@@ -89,6 +89,19 @@ double CObject::circleCircleCollision(CObject *cir1, CObject *cir2)
     return t;
 }
 
+void CObject::resolveCollisionRadialVelocity(CObject *p, vector2f qv_orig, vector2f n)
+{
+    double deltaW = n.clockwise(qv_orig) / p->m;
+    p->w -= deltaW;
+
+    if (SHOW_DAMAGE)
+    {
+        std::stringstream ss;
+        ss << int(-deltaW * 360 / (2 * M_PI) * 100);
+        objects.push_back(objectPtr( new Text(p->p.x+20, p->p.y, ss.str(), p)));
+    }
+}
+
 bool CObject::handleCollision(CObject *p, CObject *q)
 {
     // check if collision matters
@@ -111,24 +124,31 @@ bool CObject::handleCollision(CObject *p, CObject *q)
     vector2f pv_orig = p->v;
     vector2f qv_orig = q->v;
 
-    if (doPhysicsP || doPhysicsQ)
+    // move objects to point of collision
+    p->p += p->v * t;
+    q->p += q->v * t;
+
+    // find point of collision & normal
+    vector2f collisionNormal = (q->p - p->p);
+    collisionNormal.normalize();
+
+    // resolve collision
+    resolveCollision(q, p, collisionNormal);
+
+    if (doPhysicsP)
     {
-        // move objects to point of collision
-        p->p += p->v * t;
-        q->p += q->v * t;
-
-        // find point of collision & normal
-        vector2f collisionNormal = q->p - p->p;
-
-        // resolve collision
-        resolveCollision(q, p, collisionNormal);
+        resolveCollisionRadialVelocity(p, qv_orig, collisionNormal);
     }
-
-    if (!doPhysicsP)
+    else
     {
         p->v = pv_orig;
     }
-    if (!doPhysicsQ)
+
+    if (doPhysicsQ)
+    {
+        resolveCollisionRadialVelocity(q, pv_orig, collisionNormal);
+    }
+    else
     {
         q->v = qv_orig;
     }
@@ -182,6 +202,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
                         Rnd(MAX_Y),
                         0.1,            // speed
                         5,              // radius
+                        0,              // radial velocity
                         10,             // health
                         randomHeading,  // heading
                         randomBearing,  // bearing
@@ -189,7 +210,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
             }
             else
             {
-                setEverything( _type, parent->p.x, parent->p.y, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing, parent->m);
+                setEverything( _type, parent->p.x, parent->p.y, parent->speed, parent->radius, parent->w, parent->health, parent->heading, parent->bearing, parent->m);
             }
             break;
 
@@ -200,6 +221,7 @@ CObject::CObject(ObjectType _type, CObject *parent)
                     12,
                     0,               // speed
                     3,               // radius
+                    0,               // radial velocity
                     99,              // health
                     1.1,             // heading
                     1.1);            // bearing
@@ -209,11 +231,11 @@ CObject::CObject(ObjectType _type, CObject *parent)
         default:
             if (parent != NULL)
             {
-                setEverything( _type, parent->p.x, parent->p.y, parent->speed, parent->radius, parent->health, parent->heading, parent->bearing, parent->m);
+                setEverything( _type, parent->p.x, parent->p.y, parent->speed, parent->radius, parent->w, parent->health, parent->heading, parent->bearing, parent->m);
             }
             else
             {
-                setEverything( _type, 40, 40, 0, 3, 97, 0, 0);
+                setEverything( _type, 40, 40, 0, 3, 0, 97, 0, 0);
             }
             break;
     }
@@ -226,16 +248,18 @@ void CObject::setEverything(
         double _py,
         double _speed,
         double _radius,
+        double _w,
         int    _health,
         double _heading,
         double _bearing,
         double _mass)
 {
     type_   = _type;
-    p.x = _px;
-    p.y = _py;
+    p.x     = _px;
+    p.y     = _py;
     radius  = _radius;
-    health = _health;
+    w       = _w;
+    health  = _health;
     v.x     = cos(_heading) * _speed;
     v.y     = sin(_heading) * _speed;
     bearing = _bearing;
@@ -256,6 +280,9 @@ void CObject::applyForces()
     v *= 0.995; // apply some friction
     f(0,0);     // reset net force
     p += v;     // update position
+
+    w       *= 0.995;
+    azimuth += w;
 }
 
 void CObject::wrapPosition()
@@ -308,6 +335,7 @@ void CObject::ShowStats(BITMAP *pDest, CObject *obj)
     textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     y:% 010.5f", p.y);
     y++;
     textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     b:% 010.5f", azimuth);
+    textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     w:% 010.5f", w);
     textprintf_ex(pDest, font, 0, 10*y++, blue, -1, "     H:% 010.5f", heading);
     y++;
     textprintf_ex(pDest, font, 0, 10*y++, blue, -1, " speed:% 010.5f", speed);

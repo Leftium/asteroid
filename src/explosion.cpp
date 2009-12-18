@@ -17,8 +17,6 @@ bool Explosion::update()
     if (health-- > 0)
     {
         applyForces();
-        Rotate(10 * FIX_PER_RAD);
-
         if (health  > 15)
         {
             if (radius < maxRadius)

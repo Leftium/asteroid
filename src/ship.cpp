@@ -55,7 +55,6 @@ bool Ship::update()
 void Ship::bumpedInto(CObject *o, vector2f v_delta)
 {
     CObject::bumpedInto(o, v_delta);
-    Rnd(2) ? Rotate(20 * FIX_PER_RAD) : Rotate(-20 * FIX_PER_RAD);
 }
 
 void Ship::fire()

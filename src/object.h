@@ -44,6 +44,7 @@ protected:
     double   m;       // mass of object
     double   azimuth; // direction object is facing
     double   radius;  // Radius of object
+    double   w;        // radial velocity
 
     // TODO: refactor into subclasses?
     int    health;    // Amount of hits left
@@ -53,9 +54,10 @@ protected:
     std::list<objectPtrWeak> dependedObjects;
 
     void wrapPosition();
-    void setEverything(ObjectType _type, double _px, double _py, double _speed, double _radius, int _health, double _heading, double _bearing, double mass=100);
+    void setEverything(ObjectType _type, double _px, double _py, double _speed, double _radius, double _w, int _health, double _heading, double _bearing, double mass=100);
 
     static void CObject::resolveCollision(CObject *obj1, CObject *obj2, vector2f n);
+    static void CObject::resolveCollisionRadialVelocity(CObject *p, vector2f qv_orig, vector2f n);
 
 public:
     // TODO: move clipping logic outside of object class
