@@ -5,6 +5,7 @@
 #include <stdlib.h>    // for rand()
 #include "asteroid.h"
 #include "object.h"
+#include "world.h"
 #include "kinput.h"
 #include "ship.h"
 #include "sound.h"
@@ -12,16 +13,15 @@
 #include "rock.h"
 #include "text.h"
 
-#include <list>
 #include <memory>
 
 // #DEFINES /////////////////////////////////////////////////////////////////
 #define NUM_ROCKS   5
 
-#define WORLD_W 320
-#define WORLD_H 240
+#define WORLD_W 640
+#define WORLD_H 480
 
-#define PAN(x)      (int((x) * 256) / WORLD_W)
+World world(WORLD_W, WORLD_H);
 
 bool DEBUG = true;
 
@@ -35,153 +35,7 @@ int gfx_w = 640;
 int gfx_h = 480;
 int gfx_bpp = 8;
 
-void render(objectPtr o)
-{
-    const int white = makecol(255, 255, 255);
-    const int red   = makecol(255,   0,   0);
-    const int green = makecol(  0, 255,   0);
-    const int blue  = makecol(  0,   0, 255);
 
-    static int ship1EngineVoice = -1;
-    static int ship2EngineVoice = -1;
-
-    BITMAP* bmp      = NULL;
-    SAMPLE* sample   = NULL;
-    int *engineVoice = NULL;
-
-    SoundPtr sound;
-    ShipPtr s;
-    StarfieldPtr starfield;
-    TextPtr text;
-
-    int c;
-
-    double scale = 0;
-
-    o->wrapPosition();
-
-    switch (o->type)
-    {
-        case STARFIELD:
-            starfield = std::tr1::dynamic_pointer_cast<Starfield>(o);
-            starfield->draw_starfield_3d(buf);
-            break;
-
-        case FLASH:
-            circlefill(buf, o->p.x, WORLD_H - o->p.y, o->radius, white);
-            break;
-
-        case SHIP:
-            s = std::tr1::dynamic_pointer_cast<Ship>(o);
-            if (o->team == 1)
-            {
-                bmp = ship1;
-                engineVoice = &ship1EngineVoice;
-            }
-            else
-            {
-                bmp = ship2;
-                engineVoice = &ship2EngineVoice;
-            }
-
-            if (s->isEngineOn_)
-            {
-                if (*engineVoice < 0)
-                {
-                    *engineVoice = play_sample(engine, 64, PAN(o->p.x), 1000, TRUE);
-                }
-                else
-                {
-                    voice_set_pan(*engineVoice, PAN(o->p.x));
-                    voice_set_volume(*engineVoice, 64);
-                }
-            }
-            else
-            {
-                if (*engineVoice >= 0)
-                {
-                    voice_set_volume(*engineVoice, 0);
-                }
-            }
-            break;
-
-        case SHOT:
-            bmp = ((o->team == 1) ? ammo1 : ammo2);
-            break;
-
-        case ROCK:
-            scale = o->radius/7;
-            rotate_scaled_sprite(buf, rock, o->p.x - (rock->w >> 1)*scale,
-                                          -(o->p.y + (rock->h >> 1)*scale) + WORLD_H, RAD2FIX( o->azimuth ), ftofix(scale));
-            break;
-
-        case EXPLOSION:
-            scale = o->radius/12;
-            rotate_scaled_sprite(buf, explode, o->p.x - (explode->w >> 1)*scale,
-                                             -(o->p.y + (explode->h >> 1)*scale) + WORLD_H, RAD2FIX( o->azimuth ), ftofix(scale));
-            break;
-
-        case SOUND:
-            sound = std::tr1::dynamic_pointer_cast<Sound>(o);
-            switch (sound->soundType)
-            {
-                case  ENGINE:
-                    sample = engine;
-                    break;
-                case SHOOT:
-                    sample = shoot;
-                    break;
-                case BOOM:
-                    sample = boom;
-                    break;
-                default:
-                    break;
-            }
-            break;
-
-        case TEXT:
-            text = std::tr1::dynamic_pointer_cast<Text>(o);
-            c = 128 * text->health/text->maxHealth + 128;
-            c = makecol(c, 0, 0);
-            textprintf_ex(buf, font, text->p.x, WORLD_H - text->p.y, c, -1, "%s", text->message.c_str());
-
-            break;
-
-        default:
-            break;
-    }
-
-    if (bmp != NULL)
-    {
-        rotate_sprite(buf, bmp, o->p.x - (bmp->w >> 1),
-                              -(o->p.y + (bmp->h >> 1)) + WORLD_H, RAD2FIX( o->azimuth ));
-    }
-    else if (sample != NULL)
-    {
-        play_sample(sample, 64, PAN(o->p.x), 1000, 0);
-    }
-
-    if (DEBUG && o->radius > 0)
-    {
-        // collision hull/health
-        circle(buf, o->p.x, WORLD_H - o->p.y, o->radius, red);
-        int arcLength = 255 * double(o->health)/o->maxHealth/2;
-        arc(buf, o->p.x, WORLD_H - o->p.y, itofix(-64 - arcLength), itofix(-64 + arcLength), o->radius, green);
-
-        // velocity indicator
-        line(buf, o->p.x, WORLD_H - o->p.y, o->p.x + o->v.x * 10, WORLD_H - (o->p.y + o->v.y * 10), blue);
-
-        // bearing indicator
-        circle(buf, o->p.x + cos(o->azimuth) * (o->radius-1),
-                  -(o->p.y + sin(o->azimuth) * (o->radius-1)) + WORLD_H, 1, white);
-
-        // center
-        circle(buf, o->p.x, WORLD_H - o->p.y, 1, white);
-
-        // object id
-        // textprintf_ex(buf, font, (o->p.x + o->radius), WORLD_H - (o->p.y - o->radius), white, -1, "%X", o->id);
-    }
-}
 
 int initialize()
 {
@@ -306,19 +160,19 @@ int main()
     int Ship2Color = makecol(97, 255, 190);
 
     // create objects ///////////////////////////////////////////////////////
-    objects.push_back(objectPtr(new Starfield()));
+    world.addObject(new Starfield());
 
-    objects.push_back(objectPtr(new Ship(80, 100, 1, 0, 100)));
-    ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.back());
-    objects.push_back(objectPtr(new kinput(objects.back(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H) ));
+    world.addObject(new Ship(world.w/3, world.h/2, 1, 0, 100));
+    ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(world.lastObject());
+    world.addObject(new kinput(world.lastObject(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H));
 
-    objects.push_back(objectPtr(new Ship(220, 100, 2, M_PI, 100)));
-    ShipPtrWeak Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(objects.back());
-    objects.push_back(objectPtr(new kinput(objects.back(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE) ));
+    world.addObject(new Ship(world.w*2/3, world.h/2 + 5, 2, M_PI, 100));
+    ShipPtrWeak Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(world.lastObject());
+    world.addObject(new kinput(world.lastObject(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE));
 
     for (int i = 0; i<NUM_ROCKS; i++)
     {
-        objects.push_back(objectPtr(new Rock()));
+        world.addObject(new Rock());
     }
 
     objectIter iter_i, iter_j;
@@ -334,39 +188,10 @@ int main()
         }
         debugKeyPressedLastFrame = (key[KEY_BACKSPACE] != 0);
 
+        world.update();
+
         // erase buf //
         clear(buf);
-
-        iter_i = objects.begin();
-        while(iter_i != objects.end())
-        {
-            objectPtr o = *iter_i;
-            if (o->update())
-            {
-                o.reset();
-                objects.erase(iter_i++);
-            }
-            else iter_i++;
-        }
-
-        // HANDLE COLLISIONS ////////////////////////////////////////////////
-
-        iter_i = objects.begin();
-        while (iter_i != objects.end())
-        {
-            iter_j = iter_i;
-            iter_j++;
-
-            while (iter_j != objects.end())
-            {
-                objectPtr p = *iter_i;
-                objectPtr q = *iter_j;
-
-                CObject::handleCollision(p.get(), q.get());
-                iter_j++;
-            }
-            iter_i++;
-        }
 
         // DRAW EVERYTHING //////////////////////////////////////////////////
 
@@ -388,41 +213,16 @@ int main()
         {
             for (int i=Ship2->GetHealth(); i>0; i--)
             {
-                blit(bar2, buf, 0, 0, 300, buf->h-1-i*2, 14, 1);
+                blit(bar2, buf, 0, 0, buf->w - 20, buf->h-1-i*2, 14, 1);
             }
 
             if (Ship2->energy > 0)
             {
-                rectfill(buf, 293, buf->h-2, 298 , int(buf->h-2 - (double(Ship2->energy)/1000.0) * 50.0), Ship2Color);
+                rectfill(buf, buf->w - 27, buf->h-2, buf->w - 22 , int(buf->h-2 - (double(Ship2->energy)/1000.0) * 50.0), Ship2Color);
             }
         }
 
-        // remove all dependents of expired objects, as well as their dependents
-        bool removedObject = false;
-        do
-        {
-            removedObject = false;
-            iter_i = objects.begin();
-            while(iter_i != objects.end())
-            {
-                objectPtr o = *iter_i;
-                if (o->checkDependencies())
-                {
-                    o.reset();
-                    objects.erase(iter_i++);
-                    removedObject = true;
-                }
-                else iter_i++;
-            }
-        } while (removedObject == true);
-
-        iter_i = objects.begin();
-        while(iter_i != objects.end())
-        {
-            objectPtr o = *iter_i;
-            render(o);
-            iter_i++;
-        }
+        world.render(buf);
 
         vsync();
         acquire_screen();

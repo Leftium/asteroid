@@ -46,7 +46,7 @@ bool Ship::update()
     }
     else
     {
-        objects.push_back(objectPtr(new Explosion(this)));
+        world.addObject(new Explosion(this));
         return true;
     }
     return false;
@@ -61,8 +61,8 @@ void Ship::fire()
 {
     if (energy_ > 200 && reloadTime_ == 0)
     {
-        objects.push_back(objectPtr(new Shot(this)));
-        objects.push_back(objectPtr(new Sound(SHOOT, p.x, p.y)));
+        world.addObject(new Shot(this));
+        world.addObject(new Sound(SHOOT, p.x, p.y));
 
         energy_     = MAX(energy_ - 20, 0);
         reloadTime_ = 12;

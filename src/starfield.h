@@ -28,3 +28,5 @@ public:
 
     void draw_starfield_3d(BITMAP *bmp);
 };
+
+extern BITMAP *buf;

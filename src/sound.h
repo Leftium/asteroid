@@ -22,5 +22,5 @@ public:
     CollisionFlags collidesWith(CObject *o);
     bool update();
 
-    friend void render(objectPtr o);
+    friend class World;
 };

@@ -17,5 +17,5 @@ public:
 
     bool update();
 
-    friend void render(objectPtr o);
+    friend class World;
 };

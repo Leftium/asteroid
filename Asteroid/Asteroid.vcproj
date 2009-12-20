@@ -217,6 +217,10 @@
 				RelativePath="..\src\util.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\src\world.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -241,6 +245,10 @@
 			</File>
 			<File
 				RelativePath="..\src\object.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\objectTypes.h"
 				>
 			</File>
 			<File
@@ -273,6 +281,10 @@
 			</File>
 			<File
 				RelativePath="..\src\vector2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\world.h"
 				>
 			</File>
 		</Filter>

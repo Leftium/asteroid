@@ -98,7 +98,7 @@ void CObject::resolveCollisionRadialVelocity(CObject *p, vector2f qv_orig, vecto
     {
         std::stringstream ss;
         ss << int(-deltaW * 360 / (2 * M_PI) * 100);
-        objects.push_back(objectPtr( new Text(p->p.x+20, p->p.y, ss.str(), p)));
+        world.addObject(new Text(p->p.x+20, p->p.y, ss.str(), p));
     }
 }
 
@@ -166,7 +166,7 @@ bool CObject::handleCollision(CObject *p, CObject *q)
     {
         q->bumpedInto(p, q->v - qv_orig);
     }
-    objects.push_back(objectPtr(new Sound(BOOM, (p->p.x + q->p.x) / 2, (p->p.y + q->p.y) / 2 )));
+    world.addObject(new Sound(BOOM, (p->p.x + q->p.x) / 2, (p->p.y + q->p.y) / 2 ));
     return true;
 }
 
@@ -198,8 +198,8 @@ CObject::CObject(ObjectType _type, CObject *parent)
             {
                 setEverything(
                         ROCK,
-                        Rnd(MAX_X),
-                        Rnd(MAX_Y),
+                        Rnd(world.w),
+                        Rnd(world.h),
                         0.1,            // speed
                         5,              // radius
                         0,              // radial velocity
@@ -285,15 +285,6 @@ void CObject::applyForces()
     bearing += w;
 }
 
-void CObject::wrapPosition()
-{
-    while (p.x < 0) p.x += MAX_X;
-    while (p.y < 0) p.y += MAX_Y;
-
-    while (p.x > MAX_X) p.x -= MAX_X;
-    while (p.y > MAX_Y) p.y -= MAX_Y;
-}
-
 void CObject::bumpedInto(CObject *o, vector2f v_delta)
 {
     // use this in derived classes to get radius-based damage
@@ -313,7 +304,7 @@ void CObject::bumpedInto(CObject *o, vector2f v_delta)
 
     if (SHOW_DAMAGE)
     {
-        objects.push_back(objectPtr( new Text(p.x, p.y, ss.str(), this)));
+        world.addObject( new Text(p.x, p.y, ss.str(), this));
     }
 }
 

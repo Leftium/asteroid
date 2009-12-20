@@ -71,7 +71,7 @@ bool Rock::update()
     else
     {
         // explosion
-        objects.push_back(objectPtr(new Explosion(this)));
+        world.addObject(new Explosion(this));
         return true;
     }
 }
@@ -84,7 +84,7 @@ void Rock::bumpedInto(CObject *o, vector2f v_delta)
     {
         if (pow(double(health) / double(maxHealth), 2) < randf())
         {
-            objects.push_back(objectPtr(new Rock(this)));
+            world.addObject(new Rock(this));
         }
     }
 }

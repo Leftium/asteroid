@@ -8,13 +8,8 @@
 #include <list>
 #include "util.h"
 #include "vector2.h"
-
-class CObject;
-
-typedef std::tr1::shared_ptr<CObject>      objectPtr;
-typedef std::tr1::weak_ptr<CObject>        objectPtrWeak;
-typedef std::list<objectPtr>::iterator     objectIter;
-typedef std::list<objectPtrWeak>::iterator objectIterWeak;
+#include "objecttypes.h"
+#include "world.h"
 
 // Possible collision detection levels
 enum CollisionFlags
@@ -53,17 +48,12 @@ protected:
 
     std::list<objectPtrWeak> dependedObjects;
 
-    void wrapPosition();
     void setEverything(ObjectType _type, double _px, double _py, double _speed, double _radius, double _w, int _health, double _heading, double _bearing, double mass=100);
 
     static void CObject::resolveCollision(CObject *obj1, CObject *obj2, vector2f n);
     static void CObject::resolveCollisionRadialVelocity(CObject *p, vector2f qv_orig, vector2f n);
 
 public:
-    // TODO: move clipping logic outside of object class
-    static const int MAX_X = 320;
-    static const int MAX_Y = 240;
-
     static double CObject::circleCircleCollision(CObject *cir1, CObject *cir2);
     static bool CObject::handleCollision(CObject *p, CObject *q);
 
@@ -108,9 +98,7 @@ public:
 
     int        GetHealth() { return health; };
 
-    friend void render(objectPtr o);
+    friend class World;
 };
 
-extern std::list< objectPtr > objects;
-extern BITMAP *buf;
-
+extern World world;

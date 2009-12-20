@@ -30,5 +30,5 @@ public:
     void thrust(int power);
     void steer(int direction);
 
-    friend void render(objectPtr o);
+    friend class World;
 };
