@@ -253,5 +253,38 @@ void World::render(BITMAP *buf, objectPtr o)
 
 void World::render(BITMAP *buf, Camera c)
 {
-    rect(buf, c.x, h - c.y, c.x + c.w, h - (c.y + c.h), makecol(255, 255, 0));
+    rect(buf, c.x - c.w/2, h - (c.y - c.h/2), c.x + c.w/2, h - (c.y + c.h/2), makecol(255, 255, 0));
+}
+
+void World::render(BITMAP *buf, objectPtr o, Camera &camera)
+{
+    if (DEBUG && o->radius > 0)
+    {
+        const int white = makecol(128, 128, 128);
+        const int red   = makecol(128,   0,   0);
+        const int green = makecol(  0, 128,   0);
+        const int blue  = makecol(  0,   0, 128);
+
+        // collision hull/health
+
+        vector2f center = camera.World2Screen(o->p.x, o->p.y);
+        circle(buf, center.x, center.y, camera.toScreenLength(o->radius), red);
+        int arcLength = 255 * double(o->health)/o->maxHealth/2;
+        arc(buf, s.x, s.y, itofix(-64 - arcLength), itofix(-64 + arcLength), camera.toScreenLength(o->radius), green);
+
+        // velocity indicator
+        vector2f velocity = camera.World2Screen(o->p.x + o->v.x * 10, o->p.y + o->v.y * 10);
+        line(buf, center.x, center.y, velocity.x, velocity.y, blue);
+
+        // bearing indicator
+        vector2f bearing = camera.World2Screen(o->p.x + cos(o->bearing) * (o->radius-1),
+                                               o->p.y + sin(o->azimuth) * (o->radius-1));
+        circle(buf, bearing.x, bearing.y, 1, white);
+
+        // center
+        circle(buf, center.x, center.y, 1, white);
+
+        // object id
+        // textprintf_ex(buf, font, (o->p.x + o->radius), h - (o->p.y - o->radius), white, -1, "%X", o->id);
+    }
 }

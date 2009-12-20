@@ -179,7 +179,7 @@ int main()
 
     bool debugKeyPressedLastFrame = false;
 
-    Camera camera(Ship1Weak, Ship2Weak);
+    Camera camera(buf->h, Ship1Weak, Ship2Weak);
 
     // main loop ////////////////////////////////////////////////////////////
     while(!key[KEY_ESC])
@@ -227,6 +227,8 @@ int main()
 
         world.render(buf);
         world.render(buf, camera);
+        if (objectPtr ship = Ship1Weak.lock()) world.render(buf, ship, camera);
+        if (objectPtr ship = Ship2Weak.lock()) world.render(buf, ship, camera);
 
         vsync();
         acquire_screen();

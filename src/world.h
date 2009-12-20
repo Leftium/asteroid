@@ -25,5 +25,6 @@ public:
     void update();
     void render(BITMAP *buf);
     void render(BITMAP *buf, objectPtr o);
+    void render(BITMAP *buf, objectPtr o, Camera &cam);
     void render(BITMAP *buf, Camera c);
 };
