@@ -99,6 +99,7 @@ public:
     int        GetHealth() { return health; };
 
     friend class World;
+    friend class Camera;
 };
 
 extern World world;

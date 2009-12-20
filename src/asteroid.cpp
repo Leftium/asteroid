@@ -179,6 +179,8 @@ int main()
 
     bool debugKeyPressedLastFrame = false;
 
+    Camera camera(Ship1Weak, Ship2Weak);
+
     // main loop ////////////////////////////////////////////////////////////
     while(!key[KEY_ESC])
     {
@@ -189,6 +191,7 @@ int main()
         debugKeyPressedLastFrame = (key[KEY_BACKSPACE] != 0);
 
         world.update();
+        camera.adjust();
 
         // erase buf //
         clear(buf);
@@ -223,6 +226,7 @@ int main()
         }
 
         world.render(buf);
+        world.render(buf, camera);
 
         vsync();
         acquire_screen();

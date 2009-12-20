@@ -3,6 +3,7 @@
 #include <list>
 
 #include "object.h"
+#include "camera.h"
 
 class World
 {
@@ -24,4 +25,5 @@ public:
     void update();
     void render(BITMAP *buf);
     void render(BITMAP *buf, objectPtr o);
+    void render(BITMAP *buf, Camera c);
 };

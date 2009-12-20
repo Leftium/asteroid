@@ -250,3 +250,8 @@ void World::render(BITMAP *buf, objectPtr o)
         // textprintf_ex(buf, font, (o->p.x + o->radius), h - (o->p.y - o->radius), white, -1, "%X", o->id);
     }
 }
+
+void World::render(BITMAP *buf, Camera c)
+{
+    rect(buf, c.x, h - c.y, c.x + c.w, h - (c.y + c.h), makecol(255, 255, 0));
+}
