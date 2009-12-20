@@ -20,7 +20,7 @@ Ship::Ship(double x, double y, int team, double _bearing, int _health): CObject(
 }
 
 CollisionFlags Ship::collidesWith(CObject *o)
-{    
+{
     if (o->type == ROCK || o->type == SHIP || (o->type == SHOT && team != o->team))
     {
         return ALL;
@@ -76,9 +76,23 @@ void Ship::thrust(int power)
         addForce(power, bearing);
         isEngineOn_ = true;
         energy_     = MAX(energy_ - 15, 0);
+
+        w *= 0.95; // dampen angular motion
     }
     else
     {
         isEngineOn_ = false;
+    }
+}
+
+void Ship::steer(int direction)
+{
+    if (speed < 1.0)
+    {
+        w += 0.0015 * direction;
+    }
+    else
+    {
+        w += 0.003 * direction;
     }
 }

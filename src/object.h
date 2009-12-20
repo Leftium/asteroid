@@ -80,8 +80,6 @@ public:
 
     void addDependency(objectPtr obj);
 
-    void Rotate(double angle);
-
     // TODO: Move debugging outside of object class?
     void CObject::ShowStats(BITMAP *pDest, CObject *obj);
 

@@ -38,12 +38,11 @@ bool kinput::update()
 
         if(key[k_left])
         {
-           ship->Rotate( 3 * FIX_PER_RAD);
+            ship->steer(1);
         }
-
-        if(key[k_right])
+        else if(key[k_right])
         {
-            ship->Rotate(-3 * FIX_PER_RAD);
+            ship->steer(-1);
         }
 
         if(key[k_fire])

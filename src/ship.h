@@ -28,6 +28,7 @@ public:
 
     void fire();
     void thrust(int power);
+    void steer(int direction);
 
     friend void render(objectPtr o);
 };

@@ -282,7 +282,7 @@ void CObject::applyForces()
     p += v;     // update position
 
     w       *= 0.995;
-    azimuth += w;
+    bearing += w;
 }
 
 void CObject::wrapPosition()
@@ -292,11 +292,6 @@ void CObject::wrapPosition()
 
     while (p.x > MAX_X) p.x -= MAX_X;
     while (p.y > MAX_Y) p.y -= MAX_Y;
-}
-
-void CObject::Rotate(double angle)
-{
-    bearing += angle;
 }
 
 void CObject::bumpedInto(CObject *o, vector2f v_delta)
