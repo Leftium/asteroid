@@ -225,10 +225,7 @@ int main()
             }
         }
 
-        world.render(buf);
-        world.render(buf, camera);
-        if (objectPtr ship = Ship1Weak.lock()) world.render(buf, ship, camera);
-        if (objectPtr ship = Ship2Weak.lock()) world.render(buf, ship, camera);
+        world.renderCamera(buf, camera);
 
         vsync();
         acquire_screen();

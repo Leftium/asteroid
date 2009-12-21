@@ -41,8 +41,8 @@ void Camera::adjust()
         double wTarget, hTarget, xTarget, yTarget;
         if (t1 && t2)
         {
-            double idealWidth  = MID(world.w/3, fabs(t1->p.x - t2->p.x) * 3 ,world.w);
-            double idealHeight = MID(world.h/3, fabs(t1->p.y - t2->p.y) * 3 ,world.h);
+            double idealWidth  = MID(world.w/2, fabs(t1->p.x - t2->p.x) * 3 ,world.w);
+            double idealHeight = MID(world.h/2, fabs(t1->p.y - t2->p.y) * 3 ,world.h);
             double ratio = MAX(idealWidth/world.w, idealHeight/world.h);
 
             wTarget = ratio*world.w;
@@ -55,10 +55,10 @@ void Camera::adjust()
         {
             if (objectPtr t = (t1 ? t1 : t2))
             {
-                wTarget = world.w / 3;
-                hTarget = world.h / 3;
-                xTarget = t->p.x / 2;
-                yTarget = t->p.y / 2;
+                wTarget = world.w / 2;
+                hTarget = world.h / 2;
+                xTarget = t->p.x;
+                yTarget = t->p.y;
             }
         }
 

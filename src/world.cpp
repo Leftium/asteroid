@@ -91,19 +91,24 @@ void World::update()
 }
 
 
-void World::render(BITMAP *buf)
+void World::renderCamera(BITMAP *buf, Camera camera)
 {
     objectIter iter_i = objects.begin();
     while(iter_i != objects.end())
     {
         objectPtr o = *iter_i;
-        render(buf, o);
+        render(buf, o, camera);
         iter_i++;
     }
 }
 
 
-void World::render(BITMAP *buf, objectPtr o)
+void World::render(BITMAP *buf, Camera c)
+{
+    rect(buf, c.x - c.w/2, h - (c.y - c.h/2), c.x + c.w/2, h - (c.y + c.h/2), makecol(255, 255, 0));
+}
+
+void World::render(BITMAP *buf, objectPtr o, Camera &camera)
 {
     const int white = makecol(255, 255, 255);
     const int red   = makecol(255,   0,   0);
@@ -128,6 +133,19 @@ void World::render(BITMAP *buf, objectPtr o)
 
     wrapToWorld(o);
 
+    vector2f center = camera.World2Screen(o->p.x, o->p.y);
+    vector2f velocity = camera.World2Screen(o->p.x + o->v.x * 10, o->p.y + o->v.y * 10);
+    vector2f bearing = camera.World2Screen(o->p.x + cos(o->bearing) * (o->radius-1),
+                                           o->p.y + sin(o->azimuth) * (o->radius-1));
+
+    if (center.x < 0 || center.x >= buf->w || center.y < 0 || center.y >= buf->h)
+    {
+        if (o->type != STARFIELD) return;
+    }
+
+    int pan = 255 * center.x/buf->w;
+    vector2f topleft;
+
     switch (o->type)
     {
         case STARFIELD:
@@ -136,7 +154,7 @@ void World::render(BITMAP *buf, objectPtr o)
             break;
 
         case FLASH:
-            circlefill(buf, o->p.x, h - o->p.y, o->radius, white);
+            circlefill(buf, center.x, center.y, camera.toScreenLength(o->radius), white);
             break;
 
         case SHIP:
@@ -156,11 +174,11 @@ void World::render(BITMAP *buf, objectPtr o)
             {
                 if (*engineVoice < 0)
                 {
-                    *engineVoice = play_sample(engine, 64, PAN(o->p.x), 1000, TRUE);
+                    *engineVoice = play_sample(engine, 64, pan, 1000, TRUE);
                 }
                 else
                 {
-                    voice_set_pan(*engineVoice, PAN(o->p.x));
+                    voice_set_pan(*engineVoice, pan);
                     voice_set_volume(*engineVoice, 64);
                 }
             }
@@ -179,14 +197,16 @@ void World::render(BITMAP *buf, objectPtr o)
 
         case ROCK:
             scale = o->radius/7;
-            rotate_scaled_sprite(buf, rock, o->p.x - (rock->w >> 1)*scale,
-                                          -(o->p.y + (rock->h >> 1)*scale) + h, RAD2FIX( o->azimuth ), ftofix(scale));
+            topleft = camera.World2Screen(o->p.x - rock->w/2*scale, o->p.y + rock->h/2*scale);
+            rotate_scaled_sprite(buf, rock, topleft.x,
+                                            topleft.y, RAD2FIX( o->azimuth ), ftofix(scale*buf->w/camera.w));
             break;
 
         case EXPLOSION:
             scale = o->radius/12;
-            rotate_scaled_sprite(buf, explode, o->p.x - (explode->w >> 1)*scale,
-                                             -(o->p.y + (explode->h >> 1)*scale) + h, RAD2FIX( o->azimuth ), ftofix(scale));
+            topleft = camera.World2Screen(o->p.x - explode->w/2*scale, o->p.y + explode->h/2*scale);
+            rotate_scaled_sprite(buf, explode, topleft.x,
+                                               topleft.y, RAD2FIX( o->azimuth ), ftofix(scale*buf->w/camera.w));
             break;
 
         case SOUND:
@@ -211,7 +231,7 @@ void World::render(BITMAP *buf, objectPtr o)
             text = std::tr1::dynamic_pointer_cast<Text>(o);
             c = 128 * text->health/text->maxHealth + 128;
             c = makecol(c, 0, 0);
-            textprintf_ex(buf, font, text->p.x, h - text->p.y, c, -1, "%s", text->message.c_str());
+            textprintf_ex(buf, font, center.x, center.y, c, -1, "%s", text->message.c_str());
 
             break;
 
@@ -221,64 +241,27 @@ void World::render(BITMAP *buf, objectPtr o)
 
     if (bmp != NULL)
     {
-        rotate_sprite(buf, bmp, o->p.x - (bmp->w >> 1),
-                              -(o->p.y + (bmp->h >> 1)) + h, RAD2FIX( o->azimuth ));
+        topleft = camera.World2Screen(o->p.x - bmp->w/2, o->p.y + bmp->h/2);
+        rotate_scaled_sprite(buf, bmp, topleft.x,
+                                       topleft.y, RAD2FIX( o->azimuth ), ftofix(buf->w/camera.w));
     }
     else if (sample != NULL)
     {
-        play_sample(sample, 64, PAN(o->p.x), 1000, 0);
+        play_sample(sample, 64, pan, 1000, 0);
     }
 
     if (DEBUG && o->radius > 0)
     {
         // collision hull/health
-        circle(buf, o->p.x, h - o->p.y, o->radius, red);
-        int arcLength = 255 * double(o->health)/o->maxHealth/2;
-        arc(buf, o->p.x, h - o->p.y, itofix(-64 - arcLength), itofix(-64 + arcLength), o->radius, green);
 
-        // velocity indicator
-        line(buf, o->p.x, h - o->p.y, o->p.x + o->v.x * 10, h - (o->p.y + o->v.y * 10), blue);
-
-        // bearing indicator
-        circle(buf, o->p.x + cos(o->azimuth) * (o->radius-1),
-                  -(o->p.y + sin(o->azimuth) * (o->radius-1)) + h, 1, white);
-
-        // center
-        circle(buf, o->p.x, h - o->p.y, 1, white);
-
-        // object id
-        // textprintf_ex(buf, font, (o->p.x + o->radius), h - (o->p.y - o->radius), white, -1, "%X", o->id);
-    }
-}
-
-void World::render(BITMAP *buf, Camera c)
-{
-    rect(buf, c.x - c.w/2, h - (c.y - c.h/2), c.x + c.w/2, h - (c.y + c.h/2), makecol(255, 255, 0));
-}
-
-void World::render(BITMAP *buf, objectPtr o, Camera &camera)
-{
-    if (DEBUG && o->radius > 0)
-    {
-        const int white = makecol(128, 128, 128);
-        const int red   = makecol(128,   0,   0);
-        const int green = makecol(  0, 128,   0);
-        const int blue  = makecol(  0,   0, 128);
-
-        // collision hull/health
-
-        vector2f center = camera.World2Screen(o->p.x, o->p.y);
         circle(buf, center.x, center.y, camera.toScreenLength(o->radius), red);
         int arcLength = 255 * double(o->health)/o->maxHealth/2;
-        arc(buf, s.x, s.y, itofix(-64 - arcLength), itofix(-64 + arcLength), camera.toScreenLength(o->radius), green);
+        arc(buf, center.x, center.y, itofix(-64 - arcLength), itofix(-64 + arcLength), camera.toScreenLength(o->radius), green);
 
         // velocity indicator
-        vector2f velocity = camera.World2Screen(o->p.x + o->v.x * 10, o->p.y + o->v.y * 10);
         line(buf, center.x, center.y, velocity.x, velocity.y, blue);
 
         // bearing indicator
-        vector2f bearing = camera.World2Screen(o->p.x + cos(o->bearing) * (o->radius-1),
-                                               o->p.y + sin(o->azimuth) * (o->radius-1));
         circle(buf, bearing.x, bearing.y, 1, white);
 
         // center
