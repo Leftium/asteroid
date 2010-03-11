@@ -172,11 +172,29 @@ void World::render(BITMAP *buf, objectPtr o, Camera &camera)
 
             if (s->isEngineOn_)
             {
+                int freq = 0;
+
+                if (*engineVoice >= 0 && (voice_get_position(*engineVoice) == -1 || voice_check(*engineVoice) == NULL))
+                {
+                    deallocate_voice(*engineVoice);
+                    *engineVoice = -1;
+                }
+
                 if (*engineVoice < 0)
                 {
-                    *engineVoice = play_sample(engine, 64, pan, 1000, TRUE);
+                    freq = (engineVoice == &ship1EngineVoice ? engine->freq : engine->freq * 2);
+
+                    *engineVoice = allocate_voice(engine);
+                    if (*engineVoice >= 0)
+                    {
+                        voice_set_frequency(*engineVoice, freq);
+                        voice_set_playmode(*engineVoice, false);
+                        voice_start(*engineVoice);
+                    }
+
                 }
-                else
+
+                if (*engineVoice >= 0)
                 {
                     voice_set_pan(*engineVoice, pan);
                     voice_set_volume(*engineVoice, 64);
@@ -213,9 +231,6 @@ void World::render(BITMAP *buf, objectPtr o, Camera &camera)
             sound = std::tr1::dynamic_pointer_cast<Sound>(o);
             switch (sound->soundType)
             {
-                case  ENGINE:
-                    sample = engine;
-                    break;
                 case SHOOT:
                     sample = shoot;
                     break;
