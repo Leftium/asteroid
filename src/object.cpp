@@ -7,7 +7,7 @@
 #include "flash.h"
 #include "text.h"
 
-bool SHOW_DAMAGE = true;
+bool SHOW_DAMAGE = false;
 
 CollisionFlags CObject::collidesWith(CObject *o)
 {
@@ -64,12 +64,6 @@ double CObject::circleCircleCollision(CObject *cir1, CObject *cir2)
     double   r = cir1->radius + cir2->radius;
     double   ww = w*w;
 
-    if (ww < r*r)
-    {
-        // objects already overlap; ignore
-        return 666;
-    }
-
     vector2f v = cir1->v - cir2->v;
 
     double a = v*v + DBL_MIN;
@@ -82,6 +76,12 @@ double CObject::circleCircleCollision(CObject *cir1, CObject *cir2)
     {
         // objects not on collision course
         return 999;
+    }
+
+    if (c < 0)
+    {
+        // objects already overlap; ignore
+        return 666;
     }
 
     double t = (-b - sqrt(root)) / a;
@@ -166,7 +166,11 @@ bool CObject::handleCollision(CObject *p, CObject *q)
     {
         q->bumpedInto(p, q->v - qv_orig);
     }
-    world.addObject(new Sound(BOOM, (p->p.x + q->p.x) / 2, (p->p.y + q->p.y) / 2 ));
+
+    if (p->type != ROCK || q->type != ROCK)
+    {
+        world.addObject(new Sound(BOOM, (p->p.x + q->p.x) / 2, (p->p.y + q->p.y) / 2 ));
+    }
     return true;
 }
 
@@ -276,12 +280,41 @@ void CObject::addForce(double magnitude, double angle)
 // apply net force and convert to delta velocity
 void CObject::applyForces()
 {
-    v += f/m;   // add velocity from impulse
-    v *= 0.995; // apply some friction
+    vector2f dv = f/m;   // add velocity from impulse
+
+    vector2f new_v = v + dv;
+
+    if (type != SHOT && (new_v.length() > v.length()))
+    {
+        // apply lorentz factor
+        double c = 4;
+
+        double b = 1 - v.length_squared()/(c*c);
+        if (b <= 0) b = DBL_MIN;
+
+        double lorentz_factor = 1/sqrt(b);
+
+        dv /= lorentz_factor;
+    }
+
+    v += dv;
+    v *= 0.99;
+
+    // Only apply the Lorentz factor to the resulting velocity
+    // vector's magnitude; not it's direction
+    if (v.length() > 0)
+    {
+        v = new_v.normalized() * v.length();
+    }
+    
+
+    
+
+    // v *= 0.995; // apply some friction
     f(0,0);     // reset net force
     p += v;     // update position
-
-    w       *= 0.995;
+    
+    w       *= 0.99;
     bearing += w;
 }
 

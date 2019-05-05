@@ -14,6 +14,7 @@ protected:
     int reloadTime_;
 
     bool isEngineOn_;
+    bool shootRocks;
 
 public:
     // constructors

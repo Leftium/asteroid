@@ -258,7 +258,7 @@ void World::render(BITMAP *buf, objectPtr o, Camera &camera)
     {
         topleft = camera.World2Screen(o->p.x - bmp->w/2, o->p.y + bmp->h/2);
         rotate_scaled_sprite(buf, bmp, topleft.x,
-                                       topleft.y, RAD2FIX( o->azimuth ), ftofix(buf->w/camera.w));
+                                       topleft.y, -RAD2FIX( o->azimuth ), ftofix(buf->w/camera.w));
     }
     else if (sample != NULL)
     {

@@ -16,14 +16,14 @@
 #include <memory>
 
 // #DEFINES /////////////////////////////////////////////////////////////////
-#define NUM_ROCKS   5
+#define NUM_ROCKS   50
 
 #define WORLD_W 640
 #define WORLD_H 480
 
 World world(WORLD_W, WORLD_H);
 
-bool DEBUG = true;
+bool DEBUG = false;
 
 // TODO: refactor global variables
 std::list< objectPtr > objects;
@@ -31,8 +31,8 @@ BITMAP *ship1, *ship2, *rock, *ammo1, *ammo2, *buf, *explode, *bar1, *bar2;
 SAMPLE *boom, *engine, *shoot;
 
 int gfx_card = GFX_AUTODETECT_WINDOWED;
-int gfx_w = 640;
-int gfx_h = 480;
+int gfx_w = 800;
+int gfx_h = 600;
 int gfx_bpp = 8;
 
 
@@ -65,7 +65,7 @@ int initialize()
     gui_bg_color = 0;
 
     gfx_bpp = desktop_color_depth();
-    if (false && !gfx_mode_select_ex(&gfx_card, &gfx_w, &gfx_h, &gfx_bpp)) {
+    if (!gfx_mode_select_ex(&gfx_card, &gfx_w, &gfx_h, &gfx_bpp)) {
         return -1;
     }
     if (gfx_bpp != 0) {
@@ -164,9 +164,9 @@ int main()
 
     world.addObject(new Ship(world.w/3, world.h/2, 1, 0, 100));
     ShipPtrWeak Ship1Weak = std::tr1::dynamic_pointer_cast<Ship>(world.lastObject());
-    world.addObject(new kinput(world.lastObject(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_H));
+    world.addObject(new kinput(world.lastObject(), KEY_W, KEY_S, KEY_A, KEY_D, KEY_TAB));
 
-    world.addObject(new Ship(world.w*2/3, world.h/2 + 5, 2, M_PI, 100));
+    world.addObject(new Ship(world.w*2/3, world.h/2, 2, M_PI, 100));
     ShipPtrWeak Ship2Weak = std::tr1::dynamic_pointer_cast<Ship>(world.lastObject());
     world.addObject(new kinput(world.lastObject(), KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE));
 

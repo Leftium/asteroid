@@ -11,10 +11,10 @@ double randf()
 }
 
 // convert radians (0 == E, O to 2PI)
-// to Allegro fixed point binary angle (0 == N, 0 to 256)
+// to Allegro fixed point binary angle (0 == E, 0 to 256)
 fixed RAD2FIX(double r)
 {
-    return itofix((int(256+64 - (r * RAD_PER_FIX))) % 256);
+    return itofix(r * RAD_PER_FIX);
 }
 
 double squareDistance(double x1, double y1, double x2, double y2)

@@ -6,8 +6,10 @@ Shot::Shot(CObject *parent): CObject(SHOT, parent)
     radius = 4;
     m      = 10;
     maxHealth = health = 50;
+    // v(0,0);
 
-    addForce(4*m, parent->bearing);
+    addForce(6*m, parent->bearing);
+
 }
 
 CollisionFlags Shot::collidesWith(CObject *o)

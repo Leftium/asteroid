@@ -1,5 +1,30 @@
+#include "ship.h"
 #include "rock.h"
 #include "explosion.h"
+
+Rock::Rock(Ship *parent): CObject(ROCK, parent)
+{
+    const double stdMass   = 100;
+    const double stdRadius = 7;
+    const double stdHealth = 100;
+
+    radius = 7;
+    m      = 20;
+
+    maxHealth = 200;
+    health    = 100;
+    // v(0,0);
+
+    double ratio = 0.5;
+    
+    m         = ratio * stdMass;
+    radius    = sqrt(ratio) * stdRadius;
+    health    = ratio * stdHealth;
+    maxHealth = health * 1.25 ;
+
+    addForce(6*m, parent->bearing);
+
+}
 
 Rock::Rock(Rock *parent): CObject(ROCK, parent)
 {
