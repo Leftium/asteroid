@@ -1,0 +1,11 @@
+# Allegro datafile make dependencies, produced by dat v4.4.1, MSVC
+# Datafile: ASTEROID.DAT
+# Date: Fri Mar 12 20:41:44 2010
+# Do not hand edit!
+
+ASTEROID.DAT : \
+		./ammo1.bmp ./ammo2.bmp ./bar1.bmp ./bar2.bmp ./boom.wav \
+		./engine.wav ./explode.bmp ./palette.bmp ./bg.mid \
+		./rock.bmp ./ship1.bmp ./ship2.bmp ./shoot.wav \
+
+	dat -u ASTEROID.DAT
