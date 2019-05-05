@@ -23,3 +23,12 @@
   - `S`: reverse
   - `TAB`: fire
 
+### Notes:
+
+The stats in the upper left are for the green ship.
+
+- "TtC" is the "Time to Collision" between the two ships based on the current positions and velocities.
+- "b" is bearing, or the direction the ship is *facing* (radians).
+- "w" is angular momentum
+- "H" is heading, or the direction the ship is *moving* (radians).
+
