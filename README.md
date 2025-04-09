@@ -1,9 +1,9 @@
 ## Asteroids Game
 #### Made with Allegro game programming library.
 
-- Download [prebuilt Windows binaries](http://www.leftium.com/asteroid/Asteroid.zip).
+- Download [prebuilt Windows binaries](https://leftium.github.io/asteroid/Asteroid.zip).
 
-![screenshot](http://www.leftium.com/asteroid/screenshot.png)
+![screenshot](https://leftium.github.io/asteroid/screenshot.png)
 
 ### Controls:
 
